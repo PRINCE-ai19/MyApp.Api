@@ -1,0 +1,14 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+  MyApp.Domain -> D:\Clean_Architecture\MyApp.Api\MyApp.Domain\bin\Debug\net8.0\MyApp.Domain.dll
+  MyApp.Application -> D:\Clean_Architecture\MyApp.Api\MyApp.Application\bin\Debug\net8.0\MyApp.Application.dll
+  MyApp.Infrastructure -> D:\Clean_Architecture\MyApp.Api\MyApp.Infrastructure\bin\Debug\net8.0\MyApp.Infrastructure.dll
+D:\Clean_Architecture\MyApp.Api\MyApp.Api\Program.cs(2,28): error CS0234: The type or namespace name 'Data' does not exist in the namespace 'MyApp.Infrastructure' (are you missing an assembly reference?) [D:\Clean_Architecture\MyApp.Api\MyApp.Api\MyApp.Api.csproj]
+
+Build FAILED.
+
+D:\Clean_Architecture\MyApp.Api\MyApp.Api\Program.cs(2,28): error CS0234: The type or namespace name 'Data' does not exist in the namespace 'MyApp.Infrastructure' (are you missing an assembly reference?) [D:\Clean_Architecture\MyApp.Api\MyApp.Api\MyApp.Api.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:01.71
