@@ -1,5 +1,6 @@
 using AutoMapper;
 using MyApp.Application.Model_DTO;
+using MyApp.Domain.Entities;
 using MyApp.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -39,14 +40,7 @@ namespace MyApp.Application.Services
             var products = await _productRepo.GetByCategoryIdAsync(catId);
 
 
-            return products.Select(p => new
-            {
-                Id = p.Id,
-                p.Name,
-                p.Price,
-                p.Description,
-                p.Img
-            });
+            return _mapper.Map<IEnumerable<ProductDetailDTO>>(products);
         }
 
         public async Task<IEnumerable<dynamic>> GetAllProducts()
@@ -59,17 +53,7 @@ namespace MyApp.Application.Services
             var p = await _productRepo.GetByIdProductAsync(id);
             if (p == null) return null;
 
-            return new
-            {
-                Id = p.Id,
-                p.Name,
-                p.Price,
-                p.Description,
-                p.Img,
-                p.StockQuantity,
-                p.CategoryId,
-                CategoryName = p.Category?.Name
-            };
+            return _mapper.Map<ProductDetailDTO>(p);
         }
 
         public async Task AddProduct(Product_DTO dTO)
@@ -86,7 +70,7 @@ namespace MyApp.Application.Services
                 throw new Exception("Mã Code sản phẩm này đã có trong hệ thống rồi.");
             }
 
-            var newProduct = new MyApp.Domain.Entities.Product
+           /*  var newProduct = new MyApp.Domain.Entities.Product
             {
                 Name = dTO.Name,
                 Price = dTO.Price,
@@ -97,7 +81,11 @@ namespace MyApp.Application.Services
                 Code = dTO.Code,
                 RecordStatus = "1"
 
-            };
+            };*/
+           
+            var newProduct = _mapper.Map<Product>(dTO);
+           newProduct.Code = dTO.Code.Trim().ToUpper();
+            newProduct.RecordStatus = "1";
             await _productRepo.AddAsync(newProduct);
         }
 

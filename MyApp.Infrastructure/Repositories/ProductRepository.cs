@@ -21,6 +21,7 @@ namespace MyApp.Infrastructure.Repositories
         public async Task<IEnumerable<Product>> GetByCategoryIdAsync(int categoryId)
         {
             return await _context.Products
+                .Include(p => p.Category) // Eager loading để lấy thông tin Category
                 .Where(p => p.CategoryId == categoryId) // Lọc theo khóa ngoại
                 .ToListAsync();
         }

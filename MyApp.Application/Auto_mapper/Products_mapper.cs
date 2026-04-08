@@ -16,7 +16,7 @@ namespace MyApp.Application.Auto_mapper
         public Products_mapper()
         {
             CreateMap<Product_DTO, Product>()
-                // If DTO.CreatedAt is null or empty, set null (if Product.CreatedAt is nullable) or DateTime.MinValue otherwise.
+                .ForMember(dest => dest.RecordStatus, opt => opt.MapFrom(src => "1"))
                 .ForMember(
                     d => d.CreatedAt,
                     o => o.MapFrom(src =>
@@ -37,7 +37,16 @@ namespace MyApp.Application.Auto_mapper
                 );
 
             CreateMap<ProductUpdateDto, Product>().ReverseMap();
-            CreateMap<CategoryUpdateDto, Category>().ReverseMap();
+            CreateMap<CategoryUpdateDto, Category>()
+                .ForMember(d => d.RecordStatus , opt => opt.MapFrom(Src => "1"))
+                .ReverseMap();
+
+            CreateMap<Category_DTO, Category>().ReverseMap();
+               
+
+            CreateMap<Product, ProductDetailDTO>()
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name));
+       
         }
     }
 }

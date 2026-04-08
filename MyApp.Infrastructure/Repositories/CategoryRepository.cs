@@ -23,15 +23,8 @@ namespace MyApp.Infrastructure.Repositories
         {
 
             return await _context.Categories
-                .Where(x => x.RecordStatus == "1")
                 .AsNoTracking()
-                .Select(p => new
-                {
-                    p.Name,
-                    p.Description,
-                    p.Code,
-                    p.RecordStatus
-                }).ToListAsync();
+                .ToListAsync();
         }
 
         public async Task<bool> CheckCodeExisted(string code)
