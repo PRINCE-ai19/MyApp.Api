@@ -1,4 +1,4 @@
-﻿using MyApp.Domain.Entities;
+using MyApp.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace MyApp.Domain.Interfaces
     public interface ICategoryRepository
     {
         // Trả về dữ liệu thô từ DB
-        Task<IEnumerable<dynamic>> GetAllCategoriesAsync();
+        Task<IEnumerable<Category>> GetAllCategoriesAsync();
 
         Task Add(Category category);
 

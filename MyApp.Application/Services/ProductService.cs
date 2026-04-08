@@ -1,8 +1,11 @@
 using AutoMapper;
+using Microsoft.Extensions.Localization;
 using MyApp.Application.Model_DTO;
+using MyApp.Application.Resources;
 using MyApp.Domain.Entities;
 using MyApp.Domain.Interfaces;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,12 +30,14 @@ namespace MyApp.Application.Services
         private readonly IProductRepository _productRepo;
         private readonly ICategoryRepository _categoryRepo;
         private readonly IMapper _mapper;
+        private readonly IStringLocalizer<SharedResource> _localizer;
 
-        public ProductService(IProductRepository productRepo , ICategoryRepository categoryRepo , IMapper mapper)
+        public ProductService(IProductRepository productRepo , ICategoryRepository categoryRepo , IMapper mapper , IStringLocalizer<SharedResource> localizer)
         {
             _productRepo = productRepo;
             _categoryRepo = categoryRepo;
             _mapper = mapper;
+            _localizer = localizer;
         }
 
         public async Task<IEnumerable<dynamic>> GetProductsByCategoryId(int catId)
@@ -58,16 +63,16 @@ namespace MyApp.Application.Services
 
         public async Task AddProduct(Product_DTO dTO)
         {
-            var categoryId = dTO.CategoryId ?? throw new Exception("Vui lòng chọn danh mục (Category)!");
+            var categoryId = dTO.CategoryId ?? throw new Exception(_localizer["CategoryRequired"]);
             var category = await _categoryRepo.GetByIdAsync(categoryId);
             if (category == null)
             {
-                throw new Exception("Danh mục  này không tồn tại, không thể thêm sản phẩm!");
+                throw new Exception(_localizer["CategoryNotFound"]);
             }
             bool isCodeExisted = await _productRepo.CheckCodeExisted(dTO.Code);
             if (isCodeExisted)
             {
-                throw new Exception("Mã Code sản phẩm này đã có trong hệ thống rồi.");
+                throw new Exception(_localizer["DuplicateProductCode"]);
             }
 
            /*  var newProduct = new MyApp.Domain.Entities.Product
@@ -84,7 +89,7 @@ namespace MyApp.Application.Services
             };*/
            
             var newProduct = _mapper.Map<Product>(dTO);
-           newProduct.Code = dTO.Code.Trim().ToUpper();
+            newProduct.Code = dTO.Code.Trim().ToUpper();
             newProduct.RecordStatus = "1";
             await _productRepo.AddAsync(newProduct);
         }
@@ -92,19 +97,19 @@ namespace MyApp.Application.Services
         public async Task UpdateProduct(int id, ProductUpdateDto dto)
         {
             var product = await _productRepo.GetByIdProductAsync(id);
-            if (product == null) throw new Exception("Sản phẩm này không tồn tại hoặc đã bị xóa mất rồi!");
+            if (product == null) throw new Exception(_localizer["ProductAlreadyDeleted"]);
 
             if (dto.CategoryId.HasValue)
             {
                 var cate = await _categoryRepo.GetByIdAsync(dto.CategoryId.Value);
-                if (cate == null) throw new Exception("Danh mục bạn chọn không hợp lệ!");
+                if (cate == null) throw new Exception(_localizer["InvalidCategory"]);
                 product.CategoryId = dto.CategoryId;
             }
 
             if (!string.IsNullOrWhiteSpace(dto.Code))
             {
                 bool isCodeUsed = await _productRepo.CheckCodeExistedForOther(dto.Code, id);
-                if (isCodeUsed) throw new Exception("Mã Code này đã có sản phẩm khác dùng rồi babe ơi!");
+                if (isCodeUsed) throw new Exception(_localizer["DuplicateProductCode"]);
                 product.Code = dto.Code.ToUpper();
             }
 
@@ -121,18 +126,18 @@ namespace MyApp.Application.Services
 
         public async Task DeleteProduct(int id)
         {
-            if (id <= 0) throw new Exception("Id sản phẩm không hợp lệ babe ơi!");
+            if (id <= 0) throw new Exception(_localizer["InvalidProductId"]);
 
             var product = await _productRepo.GetByIdProductAsync(id);
 
             if (product == null)
             {
-                throw new Exception("Sản phẩm không tồn tại hoặc đã bị xóa trước đó rồi.");
+                throw new Exception(_localizer["ProductNotFound"]);
             }
 
             if(product.RecordStatus == "0")
             {
-                throw new Exception("sản Phẩm này đã xóa rồi á");
+                throw new Exception(_localizer["ProductAlreadyDeleted"]);
             }
             product.RecordStatus = "0"; 
             product.UpdatedAt = DateTime.Now;

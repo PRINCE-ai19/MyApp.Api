@@ -15,7 +15,7 @@ namespace MyApp.Api.Controllers
             _productService = productService;
         }
 
-        [HttpGet("category/{categoryId}")]
+        [HttpGet("laysptheoId/category/{categoryId}")]
         public async Task<IActionResult> GetByCategory(int categoryId)
         {
             var data = await _productService.GetProductsByCategoryId(categoryId);
@@ -26,7 +26,7 @@ namespace MyApp.Api.Controllers
             return Ok(data);
         }
 
-        [HttpGet]
+        [HttpGet("lay/Product")]
         public async Task<IActionResult> GetAll()
         {
             var data = await _productService.GetAllProducts();
@@ -35,7 +35,7 @@ namespace MyApp.Api.Controllers
             return Ok(data);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("layPdtheoId/Product{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             var data = await _productService.GetProductById(id);
@@ -43,14 +43,14 @@ namespace MyApp.Api.Controllers
                 return NotFound(new { message = "Không tìm thấy sản phẩm" });
             return Ok(data);
         }
-        [HttpPost]
+        [HttpPost("them/Product")]
         public async Task<IActionResult> Create([FromBody] Product_DTO dto)
         {
        
             await _productService.AddProduct(dto);
             return Ok(new { message = "Thêm sản phẩm thành công!" });
         }
-        [HttpPost("{id}")]
+        [HttpPost("sua/Product{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] ProductUpdateDto dto)
         {
             await _productService.UpdateProduct(id, dto);

@@ -22,7 +22,7 @@ namespace MyApp.Infrastructure.Repositories
         {
             return await _context.Products
                 .Include(p => p.Category) // Eager loading để lấy thông tin Category
-                .Where(p => p.CategoryId == categoryId) // Lọc theo khóa ngoại
+                .Where(p => p.CategoryId == categoryId ) // Lọc theo khóa ngoại và trạng thái
                 .ToListAsync();
         }
 
@@ -30,7 +30,7 @@ namespace MyApp.Infrastructure.Repositories
         {
             return await _context.Products
                 .Include(p => p.Category)
-                .Where(p => p.RecordStatus == "1")
+
                 .OrderByDescending(p => p.CreatedAt)
                 .AsNoTracking()
                 .Select(p => new
@@ -61,13 +61,13 @@ namespace MyApp.Infrastructure.Repositories
         {
             return await _context.Products
                 .Include(p => p.Category)
-                .FirstOrDefaultAsync(p => p.Id == id);
+                .FirstOrDefaultAsync(p => p.Id == id  );
         }
 
         public async Task<bool> CheckCodeExistedForOther(string code, int currentId)
         {
             return await _context.Products
-                .AnyAsync(p => p.Code == code && p.Id != currentId && p.RecordStatus == "1");
+                .AnyAsync(p => p.Code == code && p.Id != currentId );
         }
 
         public async Task UpdateAsync(Product product)
@@ -79,7 +79,7 @@ namespace MyApp.Infrastructure.Repositories
         public async Task<Product?> GetByIdAsync(int id)
         {
             return await _context.Products
-                .FirstOrDefaultAsync(p => p.Id == id && p.RecordStatus == "1");
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
     }

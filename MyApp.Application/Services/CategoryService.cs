@@ -1,5 +1,7 @@
 using AutoMapper;
+using Microsoft.Extensions.Localization;
 using MyApp.Application.Model_DTO;
+using MyApp.Application.Resources;
 using MyApp.Domain.Entities;
 using MyApp.Domain.Interfaces;
 using System;
@@ -16,10 +18,13 @@ namespace MyApp.Application.Services
         
         private readonly IMapper _mapper;
 
-        public CategoryService(ICategoryRepository categoryRepo , IMapper mapper)
+        private readonly IStringLocalizer<SharedResource> _localizer;
+
+        public CategoryService(ICategoryRepository categoryRepo , IMapper mapper , IStringLocalizer<SharedResource> localizer)
         {
             _categoryRepo = categoryRepo;
             _mapper = mapper;
+            _localizer = localizer;
         }
 
         public async Task<IEnumerable<dynamic>> GetListCategoryForUI()
@@ -38,7 +43,7 @@ namespace MyApp.Application.Services
             bool isCodeExisted = await _categoryRepo.CheckCodeExisted(dTO.code);
             if(isCodeExisted)
             {
-                throw new Exception("Mã Code đã tồn tại rồi, chọn mã khác đi.");
+                throw new Exception(_localizer["DuplicateProductCode"]);
             }
           /*  var NewCategory = new MyApp.Domain.Entities.Category
             {
@@ -56,18 +61,18 @@ namespace MyApp.Application.Services
         public async Task UpdateCategory(int id, CategoryUpdateDto dto)
         {
 
-            if (id <= 0) throw new Exception("Id không hợp lệ babe ơi!");
+            if (id <= 0) throw new Exception(_localizer["InvalidProductId"]);
          
 
             var existingCategory = await _categoryRepo.GetByIdAsync(id);
             if (existingCategory == null) {
-            throw new Exception("Không tìm thấy danh mục với ID đã cho.");
+            throw new Exception(_localizer["InvalidProductId"]);
             }
 
             bool isCodeUsedByOther = await _categoryRepo.CheckCodeExistedForOther(dto.code, id);
             if (isCodeUsedByOther)
             {
-                throw new Exception("Mã Code này đã được một danh mục khác sử dụng rồi!");
+                throw new Exception(_localizer["DuplicateProductCode"]);
             }
 
             if (existingCategory != null)
@@ -83,22 +88,22 @@ namespace MyApp.Application.Services
         public async Task DeleteCategory(int id)
         {
 
-            if (id <= 0) throw new Exception("Id không hợp lệ để xóa babe ơi!");
+            if (id <= 0) throw new Exception(_localizer["InvalidProductId"]);
 
             var existingCategory = await _categoryRepo.GetByIdAsyncRecordStatus(id);
             if (existingCategory == null)
             {
-                throw new Exception("Danh mục này không tồn tại hoặc đã bị xóa trước đó rồi.");
+                throw new Exception(_localizer["ProductAlreadyDeleted"]);
             }
 
             bool hasProducts = await _categoryRepo.HasRelatedProducts(id);
             if (hasProducts)
             {
-                throw new Exception("Danh mục này đang có sản phẩm, không xóa được đâu nè!");
+                throw new Exception(_localizer["CategoryHasProducts"]);
             }
             if(existingCategory.RecordStatus == "0")
             {
-                throw new Exception("Danh mục này đã bị xóa rồi, không xóa lại được đâu nè!");
+                throw new Exception(_localizer["ProductAlreadyDeleted"]);
             }
             existingCategory.RecordStatus = "0";
 

@@ -9,30 +9,28 @@ namespace MyApp.Application.Model_DTO
 {
     public class ProductUpdateDto
     {
-        [Required(ErrorMessage = "Tên sản phẩm không được để trống babe ơi!")]
-        [MaxLength(200, ErrorMessage = "Tên gì mà dài thế, dưới 200 ký tự thôi nè.")]
-        public string Name { get; set; }
+        [Required(ErrorMessage = "Product_Name_Required")]
+        [MaxLength(200, ErrorMessage = "Product_Name_Length")]
+        public string Name { get; set; } = null!;
 
-        [Required(ErrorMessage = "Phải có giá chứ babe.")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Giá phải lớn hơn 0 nha.")]
+        [Required(ErrorMessage = "Product_Price_Required")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Product_Price_Range")]
         public decimal Price { get; set; }
 
-        [MaxLength(500, ErrorMessage = "Mô tả ngắn gọn thôi, tối đa 500 ký tự.")]
+        [MaxLength(500, ErrorMessage = "Product_Desc_Length")]
         public string? Description { get; set; }
 
-        [Range(0, int.MaxValue, ErrorMessage = "Số lượng không được âm đâu.")]
+        [Range(0, int.MaxValue, ErrorMessage = "Product_Stock_Range")]
         public int? StockQuantity { get; set; }
 
-        [Required(ErrorMessage = "Sản phẩm phải thuộc về một danh mục nào đó.")]
+        [Required(ErrorMessage = "Product_Category_Required")]
         public int? CategoryId { get; set; }
-
-        public DateTime? CreatedAt { get; set; }
 
         public DateTime? UpdatedAt { get; set; }
 
         public string? Img { get; set; }
 
-        [Required(ErrorMessage = "Mã Code là bắt buộc để quản lý.")]
+        [Required(ErrorMessage = "Product_Code_Required")]
         public string? Code { get; set; }
     }
 }

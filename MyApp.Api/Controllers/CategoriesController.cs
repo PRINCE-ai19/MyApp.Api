@@ -16,14 +16,14 @@ namespace MyApp.Api.Controllers
             _categoryService = categoryService;
         }
 
-        [HttpGet]
+        [HttpGet("lay/category")]
         public async Task<IActionResult> Get()
         {
             var data = await _categoryService.GetListCategoryForUI();
             return Ok(data);
         }
 
-        [HttpPost]
+        [HttpPost("them/category")]
         public async Task<IActionResult> Create([FromBody] Category_DTO dto)
         {
 
@@ -32,7 +32,7 @@ namespace MyApp.Api.Controllers
             return Ok(new { message = "Thêm danh mục thành công!" });
         }
 
-        [HttpPost("{id}")]
+        [HttpPost("sua/category{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] CategoryUpdateDto dto)
         {
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MyApp.Domain.Entities;
 using MyApp.Domain.Interfaces;
 using MyApp.Infrastructure.Data.Context;
@@ -19,7 +19,7 @@ namespace MyApp.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<dynamic>> GetAllCategoriesAsync()
+        public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
         {
 
             return await _context.Categories
@@ -57,7 +57,7 @@ namespace MyApp.Infrastructure.Repositories
         public async Task<Category> GetByIdAsyncRecordStatus(int id)
         {
             return await _context.Categories
-                .FirstOrDefaultAsync(x => x.Id == id && x.RecordStatus == "1");
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
 
       

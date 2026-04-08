@@ -1,34 +1,33 @@
-# Tiến độ công việc - 08/04/2026
+# Tiến độ công việc - 08/04/2026 (Cập nhật 17:40 PM)
 
-## 1. Backend (API & Application)
-- [x] **Cấu hình AutoMapper**:
-    - [x] Đăng ký AutoMapper trong `Program.cs`.
-    - [x] Loại bỏ package `AutoMapper.Extensions.Microsoft.DependencyInjection` bị dư thừa gây lỗi build.
-- [x] **Cấu hình Mapping Profile**:
-    - [x] Mapping `Product_DTO` -> `Product` (Bổ sung gán `RecordStatus = "1"` mặc định).
-    - [x] Mapping `ProductUpdateDto` -> `Product` (Sửa lỗi Missing mapping).
-    - [x] Mapping `CategoryUpdateDto` -> `Category`.
-    - [x] **Fix Error**: Sửa lỗi `AutoMapperMappingException` cho `Category -> Category_DTO` bằng cách thêm `.ReverseMap()`.
-- [x] **Refactor Service**:
-    - [x] Cập nhật `ProductService.AddProduct` sử dụng `_mapper.Map`.
-    - [x] Refactor `CategoryService`: Sử dụng `IMapper` cho tất cả các phương thức (`GetListCategoryForUI`, `AddCategory`, `UpdateCategory`).
-    - [x] Refactor `ProductService`: Chuyển đổi từ `Anonymous Object` sang sử dụng `ProductDetailDTO` cho các phương thức trả về dữ liệu.
-- [x] **Mô hình DTO**:
-    - [x] Hoàn thiện `ProductDetailDTO.cs` để phục vụ hiển thị chi tiết sản phẩm.
-    - [x] Cập nhật `Category_DTO.cs`: Bổ sung trường `Id` để đồng bộ dữ liệu với UI.
-- [x] **Tối ưu Repository**:
-    - [x] `CategoryRepository.GetAllCategoriesAsync`: Trả về Entity gốc thay vì anonymous object để mapping chính xác.
-    - [x] `ProductRepository.GetByCategoryIdAsync`: Bổ sung `.Include(p => p.Category)` để lấy dữ liệu danh mục liên quan (Eager Loading).
+## 1. Backend (API & Application) - [HOÀN THÀNH]
+- [x] **AutoMapper & DTO**:
+    - [x] Đăng ký AutoMapper assembly trong `Program.cs`.
+    - [x] Sửa lỗi `MappingException` (Category -> Category_DTO) bằng `.ReverseMap()`.
+    - [x] Bổ sung trường `Id` vào `Category_DTO`.
+    - [x] Đồng bộ hóa `ProductDetailDTO`.
+- [x] **Đa ngôn ngữ (Localization) - Giai đoạn 2**:
+    - [x] Tích hợp `IStringLocalizer<SharedResource>` vào `ProductService` và `CategoryService`.
+    - [x] Chuyển đổi toàn bộ logic `throw new Exception` sang sử dụng Resource Keys (ví dụ: `CategoryRequired`, `DuplicateProductCode`).
+    - [x] Quốc tế hóa Validation Messages trong các DTO (`Product_DTO`, `ProductUpdateDto`, `Category_DTO`, `CategoryUpdateDto`).
+- [x] **Cải thiện API & Repository**:
+    - [x] Chuẩn hóa lại Route API cho tường minh hơn:
+        - Product: `/lay/Product`, `/layPdtheoId/Product{id}`, `/them/Product`, `/sua/Product{id}`.
+        - Category: `/them/category`, `/sua/category{id}`.
+    - [x] Refactor `ICategoryRepository`: Trả về `IEnumerable<Category>` thay vì `dynamic` để đảm bảo type-safety.
+    - [x] Cập nhật logic lọc `RecordStatus` trong Repository để đồng nhất dữ liệu.
 
-## 2. Frontend (Giao diện & Logic)
-- [x] **Giao diện chi tiết (Product Detail)**:
-    - [x] Thiết kế layout `ProductDetail.html`.
-    - [x] Đồng bộ phong cách CSS trong `Index.css`.
-- [x] **Xử lý dữ liệu**:
-    - [x] Viết Script `ProductDetail.js` để fetch dữ liệu từ API và hiển thị lên UI.
+## 2. Frontend (Giao diện & Tiện ích) - [ĐANG TRIỂN KHAI]
+- [x] **Tính năng đa ngôn ngữ trên UI**:
+    - [x] Triển khai Bộ chọn ngôn ngữ (VI/EN) trên Header.
+    - [x] Tích hợp tham số `culture` vào Fetch API.
+- [/] **Đồng bộ hóa Route mới**:
+    - [ ] Cần cập nhật lại các hàm `fetch()` trong JavaScript để khớp với các Endpoint mới vừa đổi tên (ví dụ: `/lay/Product` thay vì `/api/Products`).
+- [ ] **Xử lý thông báo Validation**:
+    - [ ] Hiển thị thông báo lỗi từ API (đã được localize) lên UI một cách thân thiện thay vì dùng `alert`.
 
-## 3. Các vấn đề cần giải quyết (Pending/Fixing)
-- [ ] Kiểm tra lại toàn bộ luồng Update Product để đảm bảo các trường `UpdatedAt` được cập nhật chính xác.
-- [ ] Tối ưu hóa việc hiển thị hình ảnh từ đường dẫn API.
-- [ ] Xử lý lỗi khóa file DLL khi build trong lúc ứng dụng đang chạy.
-- [ ] Kiểm tra tính nhất quán giữa frontend và backend sau khi refactor sang DTO.
+## 3. Các vấn đề tồn đồn & Task tiếp theo
+- [ ] **Khắc phục lỗi khóa file DLL**: Cần tìm giải pháp triệt để khi Build/Rebuild mà không cần tắt VS Code/Terminal.
+- [ ] **Tối ưu hóa hình ảnh**: Cấu hình lưu trữ và trả về đường dẫn ảnh thực thế thay vì dùng placeholder.
+- [ ] **Kiểm tra luồng Update**: Review kỹ lại logic `UpdatedAt` và map dữ liệu trong `UpdateProduct`.
+- [ ] **Unit Test**: Bổ sung test case cho logic Localization để đảm bảo không mất Key khi thêm DTO mới.
