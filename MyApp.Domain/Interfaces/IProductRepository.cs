@@ -13,11 +13,14 @@ namespace MyApp.Domain.Interfaces
 
         Task<IEnumerable<dynamic>> GetAllProductAsync();
 
-        Task Add(Product product);
+        Task<bool> CheckCodeExisted(string code);
+        Task AddAsync(Product entity);
 
         Task<Product> GetByIdProductAsync(int id);
         Task UpdateAsync(Product product);
 
-        Task DeleteAsync(Product product);
+   
+
+        Task<bool> CheckCodeExistedForOther(string code, int currentId);
     }
 }

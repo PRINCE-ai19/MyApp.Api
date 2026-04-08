@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Model_DTO;
 using MyApp.Application.Services;
@@ -34,29 +34,33 @@ namespace MyApp.Api.Controllers
                 return NotFound("Không có sản phẩm nào");
             return Ok(data);
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var data = await _productService.GetProductById(id);
+            if (data == null)
+                return NotFound(new { message = "Không tìm thấy sản phẩm" });
+            return Ok(data);
+        }
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Product_DTO dto)
         {
-            if (dto == null) return BadRequest("Dữ liệu không hợp lệ");
+       
             await _productService.AddProduct(dto);
             return Ok(new { message = "Thêm sản phẩm thành công!" });
         }
-        [HttpPut("{id}")]
+        [HttpPost("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] ProductUpdateDto dto)
         {
-            if (id != dto.Id) return BadRequest("ID không khớp");
-            await _productService.UpdateProduct(dto);
+            await _productService.UpdateProduct(id, dto);
             return Ok(new { message = "Cập nhật sản phẩm thành công!" });
         }
 
-        [HttpDelete("{id}")]
+        [HttpPost("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var result = await _productService.DeleteProduct(id);
-            if (!result)
-            {
-                return NotFound(new { message = "Không tìm thấy sản phẩm để xóa" });
-            }
+            await _productService.DeleteProduct(id);
             return Ok(new { message = "Xóa sản phẩm thành công!" });
         }
     }

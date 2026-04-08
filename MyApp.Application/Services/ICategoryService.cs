@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,8 +12,8 @@ namespace MyApp.Application.Services
 
         Task AddCategory(Model_DTO.Category_DTO dTO);
         
-        Task UpdateCategory(Model_DTO.CategoryUpdateDto dto);
+        Task UpdateCategory(int id, Model_DTO.CategoryUpdateDto dto);
 
-        Task<bool> DeleteCategory(int id);
+        Task DeleteCategory(int id);
     }
 }

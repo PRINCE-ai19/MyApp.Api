@@ -1,8 +1,10 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Services;
 using MyApp.Domain.Interfaces;
 using MyApp.Infrastructure.Data.Context;
 using MyApp.Infrastructure.Repositories;
+using MyApp.Application.Auto_mapper;
 
 namespace MyApp.Api
 {
@@ -21,6 +23,18 @@ namespace MyApp.Api
 
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddAutoMapper(typeof(Products_mapper));
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll",
+                    builder =>
+                    {
+                        builder.AllowAnyOrigin()
+                               .AllowAnyMethod()
+                               .AllowAnyHeader();
+                    });
+            });
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -35,6 +49,8 @@ namespace MyApp.Api
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.UseCors("AllowAll");
 
             app.UseHttpsRedirection();
 

@@ -17,8 +17,14 @@ namespace MyApp.Domain.Interfaces
         Task<Category> GetByIdAsync(int id);
         Task UpdateAsync(Category category);
 
-        Task DeleteAsync(Category category);
 
-       
+        Task<bool> CheckCodeExisted(string code);
+
+        Task<bool> CheckCodeExistedForOther(string code, int currentId);
+
+        Task<bool> HasRelatedProducts(int categoryId);
+
+        Task<Category> GetByIdAsyncRecordStatus(int id);
+
     }
 }

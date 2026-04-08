@@ -11,5 +11,7 @@ namespace MyApp.Application.Model_DTO
         public string Name { get; set; } = null!;
 
         public string? Description { get; set; }
+
+        public string code { get; set; } = null!;
     }
 }

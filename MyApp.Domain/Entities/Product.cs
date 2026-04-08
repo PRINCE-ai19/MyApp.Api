@@ -21,5 +21,11 @@ public partial class Product
 
     public DateTime? UpdatedAt { get; set; }
 
+    public string? Img { get; set; }
+
+    public string? Code { get; set; }
+
+    public string? RecordStatus { get; set; }
+
     public virtual Category? Category { get; set; }
 }

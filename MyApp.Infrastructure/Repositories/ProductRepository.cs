@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MyApp.Domain.Entities;
 using MyApp.Domain.Interfaces;
 using MyApp.Infrastructure.Data.Context;
@@ -28,27 +28,45 @@ namespace MyApp.Infrastructure.Repositories
         public async Task<IEnumerable<dynamic>> GetAllProductAsync()
         {
             return await _context.Products
+                .Include(p => p.Category)
+                .Where(p => p.RecordStatus == "1")
+                .OrderByDescending(p => p.CreatedAt)
+                .AsNoTracking()
                 .Select(p => new
                 {
-                    
+                    Id = p.Id,
                     Name = p.Name,
                     Price = p.Price,
                     Description = p.Description,
+                    img = p.Img,
                     CategoryId = p.CategoryId
                 })
                 .ToListAsync();
         }
 
-        public async Task Add(Product product)
+        public async Task<bool> CheckCodeExisted(string code)
         {
-            _context.Products.Add(product);
+            return await _context.Products.AnyAsync(p => p.Code == code);
+        }
+
+        public async Task AddAsync(Product product)
+        {
+           await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
         }
 
 
-        public async Task<Product> GetByIdProductAsync(int id)
+        public async Task<Product?> GetByIdProductAsync(int id)
         {
-            return await _context.Products.FindAsync(id);
+            return await _context.Products
+                .Include(p => p.Category)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task<bool> CheckCodeExistedForOther(string code, int currentId)
+        {
+            return await _context.Products
+                .AnyAsync(p => p.Code == code && p.Id != currentId && p.RecordStatus == "1");
         }
 
         public async Task UpdateAsync(Product product)
@@ -57,10 +75,11 @@ namespace MyApp.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(Product product)
+        public async Task<Product?> GetByIdAsync(int id)
         {
-            _context.Products.Remove(product);
-            await _context.SaveChangesAsync();
+            return await _context.Products
+                .FirstOrDefaultAsync(p => p.Id == id && p.RecordStatus == "1");
         }
+
     }
 }

@@ -8,8 +8,10 @@ namespace MyApp.Application.Model_DTO
 {
     public class CategoryUpdateDto
     {
-        public int Id { get; set; } // Cần Id để biết sửa cái nào
+
         public string Name { get; set; }
         public string Description { get; set; }
+        
+        public string code { get; set; }
     }
 }

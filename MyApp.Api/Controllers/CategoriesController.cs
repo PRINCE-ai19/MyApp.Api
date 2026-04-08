@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Model_DTO;
 using MyApp.Application.Services;
@@ -26,34 +26,26 @@ namespace MyApp.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Category_DTO dto)
         {
-            if (dto == null) return BadRequest("Dữ liệu không hợp lệ");
 
             await _categoryService.AddCategory(dto);
 
             return Ok(new { message = "Thêm danh mục thành công!" });
         }
 
-        [HttpPut("{id}")]
+        [HttpPost("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] CategoryUpdateDto dto)
         {
-            if (id != dto.Id) return BadRequest("ID không khớp");
 
-            await _categoryService.UpdateCategory(dto);
+            await _categoryService.UpdateCategory(id, dto);
 
             return Ok(new { message = "Cập nhật danh mục thành công!" });
         }
 
-        [HttpDelete("{id}")]
+        [HttpPost("delete/category/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var result = await _categoryService.DeleteCategory(id);
-
-            if (!result)
-            {
-                return NotFound(new { message = "Không tìm thấy danh mục để xóa" });
-            }
-
-            return Ok(new { message = "Xóa danh mục thành công!" });
+            await _categoryService.DeleteCategory(id);
+            return Ok(new { message = "Đã xóa mềm thành công danh mục này!" });
         }
     }
 }

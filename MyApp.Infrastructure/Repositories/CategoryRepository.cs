@@ -21,15 +21,22 @@ namespace MyApp.Infrastructure.Repositories
 
         public async Task<IEnumerable<dynamic>> GetAllCategoriesAsync()
         {
-       
+
             return await _context.Categories
-                .Select(c => new
+                .Where(x => x.RecordStatus == "1")
+                .AsNoTracking()
+                .Select(p => new
                 {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Description = c.Description
-                })
-                .ToListAsync();
+                    p.Name,
+                    p.Description,
+                    p.Code,
+                    p.RecordStatus
+                }).ToListAsync();
+        }
+
+        public async Task<bool> CheckCodeExisted(string code)
+        {
+            return await _context.Categories.AnyAsync(c => c.Code == code);
         }
 
         public async Task Add(MyApp.Domain.Entities.Category category)
@@ -43,17 +50,28 @@ namespace MyApp.Infrastructure.Repositories
             return await _context.Categories.FindAsync(id);
         }
 
+        public async Task<bool> CheckCodeExistedForOther(string code, int currentId)
+        {
+            return await _context.Categories.AnyAsync(c => c.Code == code && c.Id != currentId);
+        }
+
         public async Task UpdateAsync(Category category)
         {
             _context.Categories.Update(category); 
             await _context.SaveChangesAsync();
         }
 
-
-        public async Task DeleteAsync(Category category)
+        public async Task<Category> GetByIdAsyncRecordStatus(int id)
         {
-            _context.Categories.Remove(category);
-            await _context.SaveChangesAsync();
+            return await _context.Categories
+                .FirstOrDefaultAsync(x => x.Id == id && x.RecordStatus == "1");
+        }
+
+      
+        public async Task<bool> HasRelatedProducts(int categoryId)
+        {
+           
+            return false; 
         }
     }
 }
