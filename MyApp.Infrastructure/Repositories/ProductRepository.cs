@@ -43,7 +43,7 @@ namespace MyApp.Infrastructure.Repositories
         public async Task AddAsync(Product product)
         {
            await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
+           await _context.SaveChangesAsync();
         }
 
 

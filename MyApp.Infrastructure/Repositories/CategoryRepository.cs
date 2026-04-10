@@ -43,15 +43,10 @@ namespace MyApp.Infrastructure.Repositories
         }
 
         public async Task<Category> GetByIdAsync(int id)
-        {
-            /*return await _context.Categories.FindAsync(id);*/
+        { 
+            return await _context.Categories.FindAsync(id);
 
-            var connection = _context.Database.GetDbConnection();
-            return await connection.QueryFirstOrDefaultAsync<Category>(
-                "sp_GetCategoryById",
-                new { Id = id },
-                commandType: CommandType.StoredProcedure
-            );
+           
         }
 
         public async Task<bool> CheckCodeExistedForOther(string code, int currentId)
@@ -73,8 +68,7 @@ namespace MyApp.Infrastructure.Repositories
 
       
         public async Task<bool> HasRelatedProducts(int categoryId)
-        {
-           
+        { 
             return false; 
         }
     }

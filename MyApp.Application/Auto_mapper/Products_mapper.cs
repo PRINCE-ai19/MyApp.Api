@@ -42,6 +42,8 @@ namespace MyApp.Application.Auto_mapper
                 .ReverseMap();
 
             CreateMap<Category_DTO, Category>().ReverseMap();
+            CreateMap<Category, Category>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
                
 
             CreateMap<Product, ProductDetailDTO>()

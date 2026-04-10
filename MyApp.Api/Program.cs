@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Services;
 using MyApp.Domain.Interfaces;
@@ -7,6 +7,8 @@ using MyApp.Infrastructure.Repositories;
 using MyApp.Application.Resources;
 using MyApp.Api.Filters;
 using MyApp.Application.Auto_mapper;
+using MyApp.Domain.Interfaces_store;
+using MyApp.Infrastructure.Repositories_Store;
 
 namespace MyApp.Api
 {
@@ -21,6 +23,7 @@ namespace MyApp.Api
                 options.UseSqlServer(builder.Configuration.GetConnectionString("MyDb")));
 
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+            builder.Services.AddScoped<ICategoryRepository_store, CategoryRepository_store>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
 
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -47,7 +50,7 @@ namespace MyApp.Api
                     
                       factory.Create(typeof(SharedResource));
                     
-                }) ;
+                });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>

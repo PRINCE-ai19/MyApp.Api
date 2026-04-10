@@ -13,18 +13,6 @@ using System.Threading.Tasks;
 
 namespace MyApp.Application.Services
 {
-    public interface IProductService
-    {
-        Task<IEnumerable<dynamic>> GetProductsByCategoryId(int catId);
-        Task<IEnumerable<dynamic>> GetAllProducts();
-        Task<dynamic?> GetProductById(int id);
-
-        Task AddProduct(Product_DTO dTO);
-
-        Task UpdateProduct(int id, ProductUpdateDto dto);
-
-        Task DeleteProduct(int id);
-    }
     public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepo;
@@ -92,7 +80,6 @@ namespace MyApp.Application.Services
            
             var newProduct = _mapper.Map<Product>(dTO);
             newProduct.Code = dTO.Code.Trim().ToUpper();
-            newProduct.RecordStatus = "1";
             await _productRepo.AddAsync(newProduct);
         }
 

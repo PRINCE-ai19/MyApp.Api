@@ -19,8 +19,6 @@ namespace MyApp.Domain.Interfaces
         Task<Product> GetByIdProductAsync(int id);
         Task UpdateAsync(Product product);
 
-   
-
         Task<bool> CheckCodeExistedForOther(string code, int currentId);
     }
 }
