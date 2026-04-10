@@ -79,9 +79,8 @@ namespace MyApp.Application.Services
             {
 
                 var updatedCategory = _mapper.Map(dto, existingCategory);
-                updatedCategory.
-                    Code = dto.code.Trim().ToUpper();
-                await _categoryRepo.UpdateAsync(existingCategory);
+                updatedCategory.Code = dto.code.Trim().ToUpper();
+                await _categoryRepo.UpdateAsync(updatedCategory);
             }
         }
 

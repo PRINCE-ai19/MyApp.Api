@@ -50,7 +50,9 @@ namespace MyApp.Application.Services
 
         public async Task<IEnumerable<dynamic>> GetAllProducts()
         {
-            return await _productRepo.GetAllProductAsync();
+            var products = await _productRepo.GetAllProductAsync();
+
+            return _mapper.Map<IEnumerable<ProductDetailDTO>>(products);
         }
 
         public async Task<dynamic?> GetProductById(int id)

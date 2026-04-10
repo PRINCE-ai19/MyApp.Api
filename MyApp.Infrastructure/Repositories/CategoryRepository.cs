@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using MyApp.Domain.Entities;
 using MyApp.Domain.Interfaces;
@@ -7,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dapper;
+using System.Data;
 
 namespace MyApp.Infrastructure.Repositories
 {
@@ -21,10 +24,11 @@ namespace MyApp.Infrastructure.Repositories
 
         public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
         {
-
-            return await _context.Categories
-                .AsNoTracking()
-                .ToListAsync();
+            var connection = _context.Database.GetDbConnection();
+            return await connection.QueryAsync<Category>(
+                "sp_GetAllCategories",
+                commandType: CommandType.StoredProcedure
+            );
         }
 
         public async Task<bool> CheckCodeExisted(string code)
@@ -40,7 +44,14 @@ namespace MyApp.Infrastructure.Repositories
 
         public async Task<Category> GetByIdAsync(int id)
         {
-            return await _context.Categories.FindAsync(id);
+            /*return await _context.Categories.FindAsync(id);*/
+
+            var connection = _context.Database.GetDbConnection();
+            return await connection.QueryFirstOrDefaultAsync<Category>(
+                "sp_GetCategoryById",
+                new { Id = id },
+                commandType: CommandType.StoredProcedure
+            );
         }
 
         public async Task<bool> CheckCodeExistedForOther(string code, int currentId)

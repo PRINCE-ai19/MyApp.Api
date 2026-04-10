@@ -30,18 +30,8 @@ namespace MyApp.Infrastructure.Repositories
         {
             return await _context.Products
                 .Include(p => p.Category)
-
                 .OrderByDescending(p => p.CreatedAt)
                 .AsNoTracking()
-                .Select(p => new
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Price = p.Price,
-                    Description = p.Description,
-                    img = p.Img,
-                    CategoryId = p.CategoryId
-                })
                 .ToListAsync();
         }
 
