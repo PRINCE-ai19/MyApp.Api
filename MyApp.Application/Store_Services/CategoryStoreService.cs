@@ -36,17 +36,23 @@ namespace MyApp.Application.Store_Services
 
         public async Task<SpResponse> Create(Category_DTO dto)
         {
-            var newCategory = _mapper.Map<Category>(dto);
+            var newCategory = _mapper.Map<CategoryCreateParams>(dto);
             return await _repo.AddAsync(newCategory);
         }
 
         public async Task<SpResponse> Update(int id, Category_DTO dto)
         {
             var existingCategory = await _repo.GetByIdAsync(id);
+            if (existingCategory == null)
+            {
+                return new SpResponse { Success = false, Message = "Không tìm thấy danh mục." };
+            }
 
-           var update = _mapper.Map(dto, existingCategory);
+            _mapper.Map(dto, existingCategory);
 
-            return await _repo.UpdateAsync(update);
+            var updateParams = _mapper.Map<CategoryUpdateParams>(existingCategory);
+
+            return await _repo.UpdateAsync(updateParams);
         }
 
         public async Task<SpResponse> Delete(int id)

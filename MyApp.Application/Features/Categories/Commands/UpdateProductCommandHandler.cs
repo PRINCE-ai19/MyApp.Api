@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MyApp.Application.Features.Categories.Commands
 {
-    public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, SpResponse>
+   /* public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, SpResponse>
     {
         private readonly ICategoryRepository_store _repository;
         private readonly IMapper _mapper;
@@ -30,5 +30,5 @@ namespace MyApp.Application.Features.Categories.Commands
             _mapper.Map(request.Category, existingCategory);
             return await _repository.UpdateAsync(existingCategory);
         }
-    }
+    }*/
 }

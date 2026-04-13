@@ -1,7 +1,7 @@
 using AutoMapper;
-using Microsoft.VisualBasic;
 using MyApp.Application.Model_DTO;
 using MyApp.Domain.Entities;
+using MyApp.Domain.Common;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -50,7 +50,15 @@ namespace MyApp.Application.Auto_mapper
 
             CreateMap<Product, ProductDetailDTO>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name));
-       
+
+            CreateMap<Category, CategoryUpdateParams>();
+
+            CreateMap<Category, CategoryCreateParams>()
+                .ForMember(dest => dest.RecordStatus, opt => opt.MapFrom(src => "1"));
+
+            CreateMap<Category_DTO, CategoryCreateParams>()
+                .ForMember(dest => dest.Code, opt => opt.MapFrom(src => src.code))
+                .ForMember(dest => dest.RecordStatus, opt => opt.MapFrom(src => "1"));
         }
     }
 }

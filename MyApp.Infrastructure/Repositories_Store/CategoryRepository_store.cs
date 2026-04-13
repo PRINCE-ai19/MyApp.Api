@@ -43,34 +43,23 @@ namespace MyApp.Infrastructure.Repositories_Store
             );
         }
 
-        public async Task<SpResponse> AddAsync(Category category)
+        public async Task<SpResponse> AddAsync(CategoryCreateParams category)
         {
             var connection = _context.Database.GetDbConnection();
 
             return await connection.QueryFirstOrDefaultAsync<SpResponse>(
                 "sp_InsertCategory",
-                new
-                {
-                    Name = category.Name,
-                    Description = category.Description,
-                    Code = category.Code,
-                },
+                 category,
                 commandType: CommandType.StoredProcedure
             ) ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
         }
 
-        public async Task<SpResponse> UpdateAsync(Category category)
+        public async Task<SpResponse> UpdateAsync(CategoryUpdateParams parameters)
         {
             var connection = _context.Database.GetDbConnection();
             return await connection.QueryFirstOrDefaultAsync<SpResponse>(
                 "sp_UpdateCategory",
-                new
-                {
-                    Id = category.Id,
-                    Name = category.Name,
-                    Description = category.Description,
-                    Code = category.Code,
-                },
+                parameters,
                 commandType: CommandType.StoredProcedure
             ) ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
         }

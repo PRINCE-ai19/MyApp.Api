@@ -16,6 +16,8 @@ public partial class ProductCleanArchDbContext : DbContext
     {
     }
 
+    public virtual DbSet<AppLog> AppLogs { get; set; }
+
     public virtual DbSet<Category> Categories { get; set; }
 
     public virtual DbSet<Product> Products { get; set; }
@@ -26,6 +28,12 @@ public partial class ProductCleanArchDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<AppLog>(entity =>
+        {
+            entity.Property(e => e.Level).HasMaxLength(16);
+            entity.Property(e => e.TimeStamp).HasColumnType("datetime");
+        });
+
         modelBuilder.Entity<Category>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Categori__3214EC0708CA5D2C");
