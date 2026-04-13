@@ -1,7 +1,10 @@
 using Dapper;
 using Microsoft.EntityFrameworkCore;
-using MyApp.Domain.Entities;
+using Microsoft.Extensions.Localization;
+using MyApp.Application.Model_DTO;
+using MyApp.Application.Resources;
 using MyApp.Domain.Common;
+using MyApp.Domain.Entities;
 using MyApp.Domain.Interfaces_store;
 using MyApp.Infrastructure.Data.Context;
 using System.Collections.Generic;
@@ -10,13 +13,15 @@ using System.Threading.Tasks;
 
 namespace MyApp.Infrastructure.Repositories_Store
 {
-    public class CategoryRepository_store : ICategoryRepository_store
+    public class CategoryRepository_store : ICategoryRepository_store 
     {
         private readonly AppDbContext _context;
+        private readonly IStringLocalizer<SharedResource> _localizer;
 
-        public CategoryRepository_store(AppDbContext context)
+        public CategoryRepository_store(AppDbContext context , IStringLocalizer<SharedResource> localizer)
         {
             _context = context;
+            _localizer = localizer;
         }
 
         public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
@@ -49,10 +54,9 @@ namespace MyApp.Infrastructure.Repositories_Store
                     Name = category.Name,
                     Description = category.Description,
                     Code = category.Code,
-                    RecordStatus = category.RecordStatus
                 },
                 commandType: CommandType.StoredProcedure
-            ) ?? new SpResponse { Success = false, Message = "Lỗi không xác định từ Database." };
+            ) ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
         }
 
         public async Task<SpResponse> UpdateAsync(Category category)
@@ -66,10 +70,9 @@ namespace MyApp.Infrastructure.Repositories_Store
                     Name = category.Name,
                     Description = category.Description,
                     Code = category.Code,
-                    RecordStatus = category.RecordStatus
                 },
                 commandType: CommandType.StoredProcedure
-            ) ?? new SpResponse { Success = false, Message = "Lỗi không xác định từ Database." };
+            ) ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
         }
 
         public async Task<SpResponse> DeleteAsync(int id)
@@ -79,7 +82,7 @@ namespace MyApp.Infrastructure.Repositories_Store
                 "sp_DeleteCategory",
                 new { Id = id },
                 commandType: CommandType.StoredProcedure
-            ) ?? new SpResponse { Success = false, Message = "Lỗi không xác định từ Database." };
+            ) ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
         }
     }
 }

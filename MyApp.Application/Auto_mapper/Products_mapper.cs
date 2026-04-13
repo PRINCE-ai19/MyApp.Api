@@ -41,7 +41,9 @@ namespace MyApp.Application.Auto_mapper
                 .ForMember(d => d.RecordStatus , opt => opt.MapFrom(Src => "1"))
                 .ReverseMap();
 
-            CreateMap<Category_DTO, Category>().ReverseMap();
+            CreateMap<Category_DTO, Category>()
+                 .ForMember(dest => dest.RecordStatus, opt => opt.MapFrom(src => "1"))
+                .ReverseMap();
             CreateMap<Category, Category>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore());
                

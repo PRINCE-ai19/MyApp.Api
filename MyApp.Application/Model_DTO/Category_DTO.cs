@@ -10,9 +10,9 @@ namespace MyApp.Application.Model_DTO
     public class Category_DTO
     {
 
-       // [Required(ErrorMessage = "NameRequired")]
+      [Required(ErrorMessage = "NameRequired")]
      
-       //[StringLength(100, MinimumLength = 3, ErrorMessage = "NameLength")]
+       [StringLength(100, MinimumLength = 3, ErrorMessage = "NameLength")]
       
         public string Name { get; set; } = null!;
 

@@ -171,4 +171,7 @@
   <data name="CategoryHasProducts" xml:space="preserve">
     <value>Cannot delete this category because it contains products.</value>
   </data>
+  <data name="ERROR_UNKNOWN_DATABASE" xml:space="preserve">
+    <value>Unknown database error</value>
+  </data>
 </root>

@@ -1,9 +1,7 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Model_DTO;
-using MyApp.Domain.Entities;
-using MyApp.Domain.Interfaces_store;
+using MyApp.Application.Store_Services;
 
 namespace MyApp.Api.Controllers
 {
@@ -11,19 +9,17 @@ namespace MyApp.Api.Controllers
     [ApiController]
     public class CategoryStoreController : ControllerBase
     {
-        private readonly ICategoryRepository_store _repo;
-        private readonly IMapper _mapper;
+        private readonly ICategoryStoreService _categoryService;
 
-        public CategoryStoreController(ICategoryRepository_store repo, IMapper mapper)
+        public CategoryStoreController(ICategoryStoreService categoryService)
         {
-            _repo = repo;
-            _mapper = mapper;
+            _categoryService = categoryService;
         }
 
         [HttpGet("/Rotev2/Get/Category")]
         public async Task<IActionResult> Get()
         {
-            var data = await _repo.GetAllCategoriesAsync();
+            var data = await _categoryService.GetAllCategories();
             return Ok(data);
         }
 
@@ -32,26 +28,20 @@ namespace MyApp.Api.Controllers
         {
             try
             {
-                var data = await _repo.GetByIdAsync(id);
+                var data = await _categoryService.GetById(id);
                 return Ok(data);
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                
+                return NotFound(new { message = ex.Message });
             }
-
         }
 
         [HttpPost("/Rotev2/Update/Category/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Category_DTO categoryDto)
         {
-            var existingCategory = await _repo.GetByIdAsync(id);
-            if (existingCategory == null)
-                return NotFound(new { message = "Không tìm thấy danh mục có ID = " + id });
-
-            _mapper.Map(categoryDto, existingCategory);
-
-            var result = await _repo.UpdateAsync(existingCategory);
+            var result = await _categoryService.Update(id, categoryDto);
 
             if (result.Success)
             {
@@ -59,6 +49,7 @@ namespace MyApp.Api.Controllers
             }
             else
             {
+               
                 return BadRequest(new { message = result.Message });
             }
         }
@@ -66,12 +57,11 @@ namespace MyApp.Api.Controllers
         [HttpPost("/Rotev2/Create/Category")]
         public async Task<IActionResult> Create([FromBody] Category_DTO categoryDto)
         {
-            var newCategory = _mapper.Map<Category>(categoryDto);
-            var result = await _repo.AddAsync(newCategory);
+            var result = await _categoryService.Create(categoryDto);
 
             if (result.Success)
             {
-                return Ok(new { message = result.Message, id = result.NewId });
+                return Ok(new { message = result.Message });
             }
             else
             {
@@ -82,7 +72,7 @@ namespace MyApp.Api.Controllers
         [HttpPost("/Rotev2/Delete/Category/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var result = await _repo.DeleteAsync(id);
+            var result = await _categoryService.Delete(id);
 
             if (result.Success)
             {
@@ -90,7 +80,6 @@ namespace MyApp.Api.Controllers
             }
             else
             {
-              
                 return NotFound(new { message = result.Message });
             }
         }

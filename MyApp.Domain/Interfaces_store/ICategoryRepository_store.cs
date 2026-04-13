@@ -9,7 +9,7 @@ namespace MyApp.Domain.Interfaces_store
     {
         Task<IEnumerable<Category>> GetAllCategoriesAsync();
 
-        Task<Category?> GetByIdAsync(int id);
+        Task<Category> GetByIdAsync(int id);
 
         Task<SpResponse> UpdateAsync(Category category);
 

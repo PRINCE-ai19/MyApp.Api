@@ -9,6 +9,7 @@ using MyApp.Api.Filters;
 using MyApp.Application.Auto_mapper;
 using MyApp.Domain.Interfaces_store;
 using MyApp.Infrastructure.Repositories_Store;
+using MyApp.Application.Store_Services;
 
 namespace MyApp.Api
 {
@@ -25,9 +26,11 @@ namespace MyApp.Api
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICategoryRepository_store, CategoryRepository_store>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<ICategoryStoreService, CategoryStoreService>();
 
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(MyApp.Application.AssemblyReference).Assembly));
             builder.Services.AddAutoMapper(typeof(Products_mapper));
 
             builder.Services.AddLocalization();
