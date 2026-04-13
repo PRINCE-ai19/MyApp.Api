@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using MyApp.Application.Model_DTO;
 using MyApp.Application.Resources;
 using MyApp.Domain.Entities;
@@ -19,13 +20,15 @@ namespace MyApp.Application.Services
         private readonly ICategoryRepository _categoryRepo;
         private readonly IMapper _mapper;
         private readonly IStringLocalizer<SharedResource> _localizer;
+        private readonly ILogger<ProductService> _logger;
 
-        public ProductService(IProductRepository productRepo , ICategoryRepository categoryRepo , IMapper mapper , IStringLocalizer<SharedResource> localizer)
+        public ProductService(IProductRepository productRepo , ICategoryRepository categoryRepo , IMapper mapper , IStringLocalizer<SharedResource> localizer , ILogger<ProductService> logger)
         {
             _productRepo = productRepo;
             _categoryRepo = categoryRepo;
             _mapper = mapper;
             _localizer = localizer;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<dynamic>> GetProductsByCategoryId(int catId)
@@ -57,12 +60,12 @@ namespace MyApp.Application.Services
             var category = await _categoryRepo.GetByIdAsync(categoryId);
             if (category == null)
             {
-                throw new Exception(_localizer["CategoryNotFound"]);
+                _logger.LogError(_localizer["CategoryNotFound"]);
             }
             bool isCodeExisted = await _productRepo.CheckCodeExisted(dTO.Code);
             if (isCodeExisted)
             {
-                throw new Exception(_localizer["DuplicateProductCode"]);
+                _logger.LogError(_localizer["DuplicateProductCode"]);
             }
 
            /*  var newProduct = new MyApp.Domain.Entities.Product
@@ -86,19 +89,19 @@ namespace MyApp.Application.Services
         public async Task UpdateProduct(int id, ProductUpdateDto dto)
         {
             var product = await _productRepo.GetByIdProductAsync(id);
-            if (product == null) throw new Exception(_localizer["ProductAlreadyDeleted"]);
+            if (product == null) _logger.LogError(_localizer["ProductAlreadyDeleted"]);
 
             if (dto.CategoryId.HasValue)
             {
                 var cate = await _categoryRepo.GetByIdAsync(dto.CategoryId.Value);
-                if (cate == null) throw new Exception(_localizer["InvalidCategory"]);
+                if (cate == null) _logger.LogError(_localizer["InvalidCategory"]);
                 product.CategoryId = dto.CategoryId;
             }
 
             if (!string.IsNullOrWhiteSpace(dto.Code))
             {
                 bool isCodeUsed = await _productRepo.CheckCodeExistedForOther(dto.Code, id);
-                if (isCodeUsed) throw new Exception(_localizer["DuplicateProductCode"]);
+                if (isCodeUsed) _logger.LogError(_localizer["DuplicateProductCode"]);
                 product.Code = dto.Code.ToUpper();
             }
 
@@ -115,18 +118,18 @@ namespace MyApp.Application.Services
 
         public async Task DeleteProduct(int id)
         {
-            if (id <= 0) throw new Exception(_localizer["InvalidProductId"]);
+            if (id <= 0) _logger.LogError(_localizer["InvalidProductId"]);
 
             var product = await _productRepo.GetByIdProductAsync(id);
 
             if (product == null)
             {
-                throw new Exception(_localizer["ProductNotFound"]);
+               _logger.LogError(_localizer["ProductNotFound"]);
             }
 
             if(product.RecordStatus == "0")
             {
-                throw new Exception(_localizer["ProductAlreadyDeleted"]);
+                _logger.LogError(_localizer["ProductAlreadyDeleted"]);
             }
             product.RecordStatus = "0"; 
             product.UpdatedAt = DateTime.Now;

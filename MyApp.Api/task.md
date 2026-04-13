@@ -60,4 +60,28 @@
 - [/] **Lỗi khóa file DLL**: Đang gặp lỗi file `.dll` bị process `MyApp.Api` chiếm dụng khi build lại nhanh.
 
 ---
-## tiến độ công việc - 13/04/2026 (Cập nhật 17:15 PM)
+## Tiến độ công việc - 13/04/2026 (Cập nhật 15:35 PM)
+
+### 1. CQRS & MediatR - [HOÀN THÀNH]
+- [x] **Cấu trúc Feature-based**: Triển khai Command & Query cho Category (Create, Update, Delete, GetList).
+- [x] **Phát triển Command Handlers**: Xử lý logic nghiệp vụ tách biệt hoàn toàn khỏi Service truyền thống.
+- [x] **MediatR Integration**: Đăng ký và cấu hình MediatR trong `Program.cs` để quản lý các Request/Response.
+
+### 2. Logging & Hệ thống (Serilog) - [HOÀN THÀNH]
+- [x] **Cấu hình Serilog MSSQL Sink**: Tích hợp ghi log trực tiếp vào SQL Server thông qua bảng `AppLogs`.
+- [x] **Tự động hóa Database**: Kích hoạt `autoCreateSqlTable: true` đảm bảo hệ thống tự khởi tạo bảng log khi bắt đầu.
+- [x] **Hệ thống Debugging (SelfLog)**: Bật Serilog SelfLog để bắt các lỗi nội bộ (kết nối SQL, lỗi tham số) vào file `Logs/selflog.txt`.
+- [x] **Sửa lỗi cấu hình**: Khắc phục lỗi sai chính tả trong `appsettings.json` cho Sink MSSQL.
+
+### 3. Fix Bug & Tối ưu hóa Database Layer - [HOÀN THÀNH]
+- [x] **Sửa lỗi NullReferenceException**: Xử lý triệt để lỗi crash tại `DeleteCategory` khi ID không tồn tại hoặc ID=1000.
+- [x] **Đảm bảo Guard Clauses**: Bổ sung các lệnh `return` hoặc `throw` ngay tại đầu hàm Service để tránh code chạy "lố".
+- [x] **Stored Procedure Parameter DTOs**:
+    - [x] Khởi tạo `CategoryUpdateParams` và `CategoryCreateParams` (Domain layer).
+    - [x] Tối ưu hóa mapping trong `Products_mapper` để chuyển đổi tự động sang các class tham số này.
+    - [x] Khắc phục lỗi "Too many arguments" của Dapper khi gọi Store.
+
+### 4. Các công việc tiếp theo
+- [ ] **Phát triển UI Admin**: Nhúng các Endpoint `/Rotev2` (Dapper/MediatR) vào giao diện React/Vue để kiểm thử đầu-cuối.
+- [ ] **Chuyển đổi Product**: Tiếp tục áp dụng mô hình CQRS & MediatR cho module Sản phẩm (Product).
+- [ ] **Security**: Kiểm tra lại các trường nhạy cảm trong DTO để tránh lộ dữ liệu không cần thiết lên Swagger.
