@@ -10,6 +10,7 @@ using MyApp.Application.Auto_mapper;
 using MyApp.Domain.Interfaces_store;
 using MyApp.Infrastructure.Repositories_Store;
 using MyApp.Application.Store_Services;
+using Serilog;
 
 namespace MyApp.Api
 {
@@ -32,6 +33,14 @@ namespace MyApp.Api
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(MyApp.Application.AssemblyReference).Assembly));
             builder.Services.AddAutoMapper(typeof(Products_mapper));
+
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(builder.Configuration)
+                .CreateLogger();
+
+            builder.Host.UseSerilog(); // sử dụng Serilog 
+
+       
 
             builder.Services.AddLocalization();
 
@@ -60,37 +69,42 @@ namespace MyApp.Api
             {
                 c.OperationFilter<SwaggerCultureFilter>();
             });
-
+             
+                Log.Information("Ứng dụng đang được khởi động");
             var app = builder.Build();
+                var supportedCultures = new[] { "en-US", "vi-VN" };
+                var localizationOptions = new RequestLocalizationOptions()
+                    .SetDefaultCulture("vi-VN") // Đặt ngôn ngữ mặc định là tiếng Việt
+                    .AddSupportedCultures(supportedCultures)
+                    .AddSupportedUICultures(supportedCultures);
 
-            var supportedCultures = new[] { "en-US", "vi-VN" };
-            var localizationOptions = new RequestLocalizationOptions()
-                .SetDefaultCulture("vi-VN") // Đặt ngôn ngữ mặc định là tiếng Việt
-                .AddSupportedCultures(supportedCultures)
-                .AddSupportedUICultures(supportedCultures);
-
-            // cấu hình middlware dể cho nó nhận diện cái query string ?culture=vi-VN hoặc ?culture=en-US để thay đổi ngôn ngữ
-            localizationOptions.ApplyCurrentCultureToResponseHeaders = true;
-
-         
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-            app.UseCors("AllowAll");
-
-            app.UseRequestLocalization(localizationOptions);
-
-            app.UseHttpsRedirection();
-
-            app.UseAuthorization();
+                // cấu hình middlware dể cho nó nhận diện cái query string ?culture=vi-VN hoặc ?culture=en-US để thay đổi ngôn ngữ
+                localizationOptions.ApplyCurrentCultureToResponseHeaders = true;
 
 
-            app.MapControllers();
+
+                // Configure the HTTP request pipeline.
+                if (app.Environment.IsDevelopment())
+                {
+                    app.UseSwagger();
+                    app.UseSwaggerUI();
+                }
+
+                app.UseCors("AllowAll");
+
+                app.UseRequestLocalization(localizationOptions);
+
+                app.UseSerilogRequestLogging(); // Middleware để ghi log cho mỗi request
+
+                app.UseHttpsRedirection();
+
+                app.UseAuthorization();
+
+
+                app.MapControllers();
+
+
+            
 
             app.Run();
         }
