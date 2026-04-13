@@ -1,12 +1,15 @@
 using AutoMapper;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using MyApp.Application.Model_DTO;
 using MyApp.Application.Resources;
+using MyApp.Domain.Common;
 using MyApp.Domain.Entities;
 using MyApp.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,11 +23,14 @@ namespace MyApp.Application.Services
 
         private readonly IStringLocalizer<SharedResource> _localizer;
 
-        public CategoryService(ICategoryRepository categoryRepo , IMapper mapper , IStringLocalizer<SharedResource> localizer)
+        private readonly ILogger<CategoryService> _logger;
+
+        public CategoryService(ICategoryRepository categoryRepo , IMapper mapper , IStringLocalizer<SharedResource> localizer , ILogger<CategoryService> logger)
         {
             _categoryRepo = categoryRepo;
             _mapper = mapper;
             _localizer = localizer;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<dynamic>> GetListCategoryForUI()
@@ -37,76 +43,85 @@ namespace MyApp.Application.Services
 
         }
 
-        public async Task AddCategory(Category_DTO dTO)
+        public async Task<SpResponse> AddCategory(Category_DTO dTO)
         {
           
             bool isCodeExisted = await _categoryRepo.CheckCodeExisted(dTO.code);
             if(isCodeExisted)
             {
-                throw new Exception(_localizer["DuplicateProductCode"]);
+               _logger.LogError(_localizer["DuplicateProductCode"]);
+               return new SpResponse { Success = false, Message = _localizer["DuplicateProductCode"] };
             }
-          /*  var NewCategory = new MyApp.Domain.Entities.Category
-            {
-                Name = dTO.Name,
-                Description = dTO.Description,
-                Code = dTO.code.Trim().ToUpper(),
-                RecordStatus = "1"
-            };*/
-          var NewCategory = _mapper.Map<Category>(dTO);
+
+            var NewCategory = _mapper.Map<Category>(dTO);
             NewCategory.Code = dTO.code.Trim().ToUpper();
             NewCategory.RecordStatus="1";
             await _categoryRepo.Add(NewCategory);
+            return new SpResponse { Success = true, Message = "Thêm danh mục thành công!" };
         }
 
-        public async Task UpdateCategory(int id, CategoryUpdateDto dto)
+        public async Task<SpResponse> UpdateCategory(int id, CategoryUpdateDto dto)
         {
 
-            if (id <= 0) throw new Exception(_localizer["InvalidProductId"]);
-         
+            if (id <= 0)
+            {
+                _logger.LogError(_localizer["InvalidProductId"]);
+                return new SpResponse { Success = false, Message = _localizer["InvalidProductId"] };
+            }
 
             var existingCategory = await _categoryRepo.GetByIdAsync(id);
             if (existingCategory == null) {
-            throw new Exception(_localizer["InvalidProductId"]);
+                _logger.LogError(_localizer["InvalidProductId"]);
+                return new SpResponse { Success = false, Message = _localizer["InvalidProductId"] };
             }
 
             bool isCodeUsedByOther = await _categoryRepo.CheckCodeExistedForOther(dto.code, id);
             if (isCodeUsedByOther)
             {
-                throw new Exception(_localizer["DuplicateProductCode"]);
+                _logger.LogError(_localizer["DuplicateProductCode"]);
+                return new SpResponse { Success = false, Message = _localizer["DuplicateProductCode"] };
             }
 
-            if (existingCategory != null)
-            {
-
-                var updatedCategory = _mapper.Map(dto, existingCategory);
-                updatedCategory.Code = dto.code.Trim().ToUpper();
-                await _categoryRepo.UpdateAsync(updatedCategory);
-            }
+            var updatedCategory = _mapper.Map(dto, existingCategory);
+            updatedCategory.Code = dto.code.Trim().ToUpper();
+            await _categoryRepo.UpdateAsync(updatedCategory);
+            return new SpResponse { Success = true, Message = "Cập nhật danh mục thành công!" };
         }
 
-        public async Task DeleteCategory(int id)
+        public async Task<SpResponse> DeleteCategory(int id)
         {
 
-            if (id <= 0) throw new Exception(_localizer["InvalidProductId"]);
+            if (id <= 0)
+            {
+                _logger.LogError(_localizer["InvalidProductId"]);
+                return new SpResponse { Success = false, Message = _localizer["InvalidProductId"] };
+            }
 
             var existingCategory = await _categoryRepo.GetByIdAsyncRecordStatus(id);
             if (existingCategory == null)
             {
-                throw new Exception(_localizer["ProductAlreadyDeleted"]);
+                _logger.LogError(_localizer["ProductAlreadyDeleted"]);
+                return new SpResponse { Success = false, Message = _localizer["ProductAlreadyDeleted"] };
             }
 
             bool hasProducts = await _categoryRepo.HasRelatedProducts(id);
             if (hasProducts)
             {
-                throw new Exception(_localizer["CategoryHasProducts"]);
+               _logger.LogError(_localizer["CategoryHasProducts"]);
+               return new SpResponse { Success = false, Message = _localizer["CategoryHasProducts"] };
             }
+
             if(existingCategory.RecordStatus == "0")
             {
-                throw new Exception(_localizer["ProductAlreadyDeleted"]);
+               _logger.LogError (_localizer["ProductAlreadyDeleted"]);
+               return new SpResponse { Success = false, Message = _localizer["ProductAlreadyDeleted"] };
             }
+
             existingCategory.RecordStatus = "0";
 
             await _categoryRepo.UpdateAsync(existingCategory);
+
+            return new SpResponse { Success = true, Message = "Xóa danh mục thành công!" };
         }
     }
 }

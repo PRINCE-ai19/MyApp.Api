@@ -34,6 +34,13 @@ namespace MyApp.Api
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(MyApp.Application.AssemblyReference).Assembly));
             builder.Services.AddAutoMapper(typeof(Products_mapper));
 
+            // Bật SelfLog để xem lỗi nội bộ của Serilog (ví dụ: lỗi SQL Sink)
+            Serilog.Debugging.SelfLog.Enable(msg => 
+            {
+                Console.WriteLine(msg);
+                File.AppendAllText("Logs/selflog.txt", msg + Environment.NewLine);
+            });
+
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(builder.Configuration)
                 .CreateLogger();

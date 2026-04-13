@@ -60,13 +60,12 @@ namespace MyApp.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Category> GetByIdAsyncRecordStatus(int id)
+        public async Task<Category?> GetByIdAsyncRecordStatus(int id)
         {
             return await _context.Categories
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.Id == id && x.RecordStatus == "1");
         }
 
-      
         public async Task<bool> HasRelatedProducts(int categoryId)
         { 
             return false; 

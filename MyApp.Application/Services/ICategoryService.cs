@@ -1,3 +1,4 @@
+using MyApp.Domain.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +11,10 @@ namespace MyApp.Application.Services
     {
         Task<IEnumerable<dynamic>> GetListCategoryForUI();
 
-        Task AddCategory(Model_DTO.Category_DTO dTO);
+        Task<SpResponse> AddCategory(Model_DTO.Category_DTO dTO);
         
-        Task UpdateCategory(int id, Model_DTO.CategoryUpdateDto dto);
+        Task<SpResponse> UpdateCategory(int id, Model_DTO.CategoryUpdateDto dto);
 
-        Task DeleteCategory(int id);
+        Task<SpResponse> DeleteCategory(int id);
     }
 }
