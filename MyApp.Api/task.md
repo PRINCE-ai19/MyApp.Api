@@ -60,3 +60,4 @@
 - [/] **Lỗi khóa file DLL**: Đang gặp lỗi file `.dll` bị process `MyApp.Api` chiếm dụng khi build lại nhanh.
 
 ---
+## tiến độ công việc - 13/04/2026 (Cập nhật 17:15 PM)

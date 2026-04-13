@@ -5,6 +5,7 @@ using MyApp.Application.Services;
 using MediatR;
 using MyApp.Application.Features.Categories.Queries.GetListCategory;
 using MyApp.Application.Features.Categories.Commands;
+using Microsoft.VisualBasic;
 
 namespace MyApp.Api.Controllers
 {
@@ -56,8 +57,12 @@ namespace MyApp.Api.Controllers
         [HttpPost("delete/category/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _categoryService.DeleteCategory(id);
-            return Ok(new { message = "Đã xóa mềm thành công danh mục này!" });
+           var result = await _sender.Send(new DeleteCategoryCommad(id));
+            if (!result.Success)
+            {
+                return BadRequest(new { message = result.Message });
+            }
+            return Ok(new { message = result.Message });
         }
     }
 }
