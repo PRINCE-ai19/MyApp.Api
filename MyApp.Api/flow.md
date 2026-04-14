@@ -90,7 +90,7 @@ var parameters = await DapperHelper.MapParametersAsync(connection, "sp_Category_
 
 ### 5.1. Kiến thức nền tảng (Đọc trước khi xem code)
 
-#### 🔍 Reflection là gì?
+####  Reflection là gì?
 Reflection là khả năng của C# cho phép **"soi gương" một object** lúc chương trình đang chạy (runtime). Nghĩa là bạn có thể:
 - Biết object đó có những thuộc tính (property) nào
 - Đọc tên, kiểu dữ liệu, và giá trị của từng property
@@ -103,7 +103,7 @@ var props = typeof(Category).GetProperties();
 // → Giống như bạn mở class ra xem vậy, nhưng làm lúc runtime!
 ```
 
-#### 🧠 ConcurrentDictionary là gì?
+####  ConcurrentDictionary là gì?
 - Là một **Dictionary đặc biệt** an toàn khi nhiều thread truy cập cùng lúc.
 - Web API nhận nhiều request song song → nhiều thread chạy đồng thời → nếu dùng `Dictionary` thường → **crash hoặc mất dữ liệu**.
 - `ConcurrentDictionary` giải quyết vấn đề này bằng cơ chế khóa (locking) nội bộ.
@@ -114,7 +114,7 @@ Dictionary       = 1 cuốn sổ, 10 người cùng viết vào → chữ đè l
 ConcurrentDict   = 1 cuốn sổ, nhưng có khóa → mỗi lần chỉ 1 người viết → an toàn
 ```
 
-#### 🗄️ `sys.parameters` là gì?
+####  `sys.parameters` là gì?
 - SQL Server lưu **metadata** (thông tin về cấu trúc) của mọi SP trong các bảng hệ thống.
 - `sys.parameters` là bảng chứa danh sách tham số của tất cả SP.
 
