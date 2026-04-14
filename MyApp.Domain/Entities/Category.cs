@@ -15,5 +15,7 @@ public partial class Category
 
     public string? RecordStatus { get; set; }
 
+    public DateTime? CreatedDate { get; set; }
+
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

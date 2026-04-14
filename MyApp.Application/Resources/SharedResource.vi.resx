@@ -171,6 +171,21 @@
   <data name="CategoryHasProducts" xml:space="preserve">
     <value>Danh mục này đang có sản phẩm, không xóa được đâu nè</value>
   </data>
+  <data name="UsernameRequired" xml:space="preserve">
+    <value>Tên đăng nhập không được để trống.</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Mật khẩu không được để trống.</value>
+  </data>
+  <data name="DuplicateUsername" xml:space="preserve">
+    <value>Tên đăng nhập đã tồn tại trong hệ thống.</value>
+  </data>
+  <data name="DuplicateEmail" xml:space="preserve">
+    <value>Email này đã được sử dụng bởi tài khoản khác.</value>
+  </data>
+  <data name="RegisterSuccess" xml:space="preserve">
+    <value>Đăng ký tài khoản thành công!</value>
+  </data>
   <data name="ERROR_UNKNOWN_DATABASE" xml:space="preserve">
     <value>Lỗi không xác định từ Database.</value>
   </data>

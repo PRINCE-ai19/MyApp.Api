@@ -171,6 +171,21 @@
   <data name="CategoryHasProducts" xml:space="preserve">
     <value>Cannot delete this category because it contains products.</value>
   </data>
+  <data name="UsernameRequired" xml:space="preserve">
+    <value>Username is required.</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Password is required.</value>
+  </data>
+  <data name="DuplicateUsername" xml:space="preserve">
+    <value>Username already exists in the system.</value>
+  </data>
+  <data name="DuplicateEmail" xml:space="preserve">
+    <value>This email is already used by another account.</value>
+  </data>
+  <data name="RegisterSuccess" xml:space="preserve">
+    <value>Account registered successfully!</value>
+  </data>
   <data name="ERROR_UNKNOWN_DATABASE" xml:space="preserve">
     <value>Unknown database error</value>
   </data>

@@ -1,16 +1,20 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using MyApp.Application.Services;
-using MyApp.Domain.Interfaces;
-using MyApp.Infrastructure.Data.Context;
-using MyApp.Infrastructure.Repositories;
-using MyApp.Application.Resources;
+using Microsoft.IdentityModel.Tokens;
 using MyApp.Api.Filters;
 using MyApp.Application.Auto_mapper;
-using MyApp.Domain.Interfaces_store;
-using MyApp.Infrastructure.Repositories_Store;
+using MyApp.Application.Resources;
+using MyApp.Application.Services;
 using MyApp.Application.Store_Services;
+using MyApp.Domain.Interfaces;
+using MyApp.Domain.Interfaces_store;
+using MyApp.Infrastructure.Data.Context;
+using MyApp.Infrastructure.Repositories;
+using MyApp.Infrastructure.Repositories_Store;
+using MyApp.Infrastructure.Services;
 using Serilog;
+using System.Text;
 
 namespace MyApp.Api
 {
@@ -31,8 +35,28 @@ namespace MyApp.Api
 
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IJwtRepository, JwtRepository>();
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(MyApp.Application.AssemblyReference).Assembly));
             builder.Services.AddAutoMapper(typeof(Products_mapper));
+
+            builder.Services.AddAuthentication(options => {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(options => {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]))
+                    };
+                });
 
             // Bật SelfLog để xem lỗi nội bộ của Serilog (ví dụ: lỗi SQL Sink)
             Serilog.Debugging.SelfLog.Enable(msg => 
@@ -105,7 +129,9 @@ namespace MyApp.Api
 
                 app.UseHttpsRedirection();
 
-                app.UseAuthorization();
+            app.UseAuthentication();
+
+            app.UseAuthorization();
 
 
                 app.MapControllers();
