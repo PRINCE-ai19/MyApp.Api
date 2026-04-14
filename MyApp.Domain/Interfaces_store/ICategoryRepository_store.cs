@@ -11,9 +11,9 @@ namespace MyApp.Domain.Interfaces_store
 
         Task<Category> GetByIdAsync(int id);
 
-        Task<SpResponse> UpdateAsync(CategoryUpdateParams parameters);
+        Task<SpResponse> UpdateAsync(Category category);
 
-        Task<SpResponse> AddAsync(CategoryCreateParams category);
+        Task<SpResponse> AddAsync(Category category);
 
         Task<SpResponse> DeleteAsync(int id);
     }

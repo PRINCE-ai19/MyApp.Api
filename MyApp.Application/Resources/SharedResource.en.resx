@@ -171,7 +171,19 @@
   <data name="CategoryHasProducts" xml:space="preserve">
     <value>Cannot delete this category because it contains products.</value>
   </data>
+  <data name="DuplicateCategoryCode" xml:space="preserve">
+    <value>Category code already exists in the system.</value>
+  </data>
+  <data name="InvalidCreatedDate" xml:space="preserve">
+    <value>Created date must be today. Future or past dates are not allowed.</value>
+  </data>
+  <data name="InsertCategorySuccess" xml:space="preserve">
+    <value>Category added successfully!</value>
+  </data>
+  <data name="UpdateCategorySuccess" xml:space="preserve">
+    <value>Category updated successfully!</value>
+  </data>
   <data name="ERROR_UNKNOWN_DATABASE" xml:space="preserve">
-    <value>Unknown database error</value>
+    <value>Unknown database error.</value>
   </data>
 </root>

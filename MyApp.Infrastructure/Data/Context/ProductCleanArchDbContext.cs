@@ -39,6 +39,7 @@ public partial class ProductCleanArchDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__Categori__3214EC0708CA5D2C");
 
             entity.Property(e => e.Code).HasMaxLength(50);
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.Description).HasMaxLength(255);
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.RecordStatus).HasMaxLength(1);

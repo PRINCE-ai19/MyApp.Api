@@ -171,6 +171,18 @@
   <data name="CategoryHasProducts" xml:space="preserve">
     <value>Danh mục này đang có sản phẩm, không xóa được đâu nè</value>
   </data>
+  <data name="DuplicateCategoryCode" xml:space="preserve">
+    <value>Mã danh mục đã tồn tại trong hệ thống.</value>
+  </data>
+  <data name="InvalidCreatedDate" xml:space="preserve">
+    <value>Ngày tạo phải là ngày hôm nay. Không được nhập ngày trong quá khứ hoặc tương lai.</value>
+  </data>
+  <data name="InsertCategorySuccess" xml:space="preserve">
+    <value>Thêm danh mục thành công!</value>
+  </data>
+  <data name="UpdateCategorySuccess" xml:space="preserve">
+    <value>Cập nhật danh mục thành công!</value>
+  </data>
   <data name="ERROR_UNKNOWN_DATABASE" xml:space="preserve">
     <value>Lỗi không xác định từ Database.</value>
   </data>

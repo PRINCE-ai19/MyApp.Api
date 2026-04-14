@@ -22,5 +22,7 @@ namespace MyApp.Application.Model_DTO
         [Required(ErrorMessage = "CodeRequired")]
         public string code { get; set; } = null!;
 
+        public string? CreatedDate { get; set;}
+
     }
 }

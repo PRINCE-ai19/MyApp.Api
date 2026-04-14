@@ -42,7 +42,16 @@ namespace MyApp.Application.Auto_mapper
                 .ReverseMap();
 
             CreateMap<Category_DTO, Category>()
+                 .ForMember(dest => dest.Code, opt => opt.MapFrom(src => src.code))
                  .ForMember(dest => dest.RecordStatus, opt => opt.MapFrom(src => "1"))
+                 .ForMember(
+                    d => d.CreatedDate,
+                    o => o.MapFrom(src =>
+                        string.IsNullOrWhiteSpace(src.CreatedDate)
+                            ? (DateTime?)null
+                            : DateTime.ParseExact(src.CreatedDate, "dd/MM/yyyy", new CultureInfo("vi-VN"))
+                    )
+                  )
                 .ReverseMap();
             CreateMap<Category, Category>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore());
@@ -51,14 +60,11 @@ namespace MyApp.Application.Auto_mapper
             CreateMap<Product, ProductDetailDTO>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name));
 
-            CreateMap<Category, CategoryUpdateParams>();
+        
 
-            CreateMap<Category, CategoryCreateParams>()
-                .ForMember(dest => dest.RecordStatus, opt => opt.MapFrom(src => "1"));
+         
 
-            CreateMap<Category_DTO, CategoryCreateParams>()
-                .ForMember(dest => dest.Code, opt => opt.MapFrom(src => src.code))
-                .ForMember(dest => dest.RecordStatus, opt => opt.MapFrom(src => "1"));
+       
         }
     }
 }

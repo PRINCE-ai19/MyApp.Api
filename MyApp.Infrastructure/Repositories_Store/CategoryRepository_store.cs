@@ -7,6 +7,7 @@ using MyApp.Domain.Common;
 using MyApp.Domain.Entities;
 using MyApp.Domain.Interfaces_store;
 using MyApp.Infrastructure.Data.Context;
+using MyApp.Infrastructure.Helpers;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
@@ -42,26 +43,45 @@ namespace MyApp.Infrastructure.Repositories_Store
                 commandType: CommandType.StoredProcedure
             );
         }
-
-        public async Task<SpResponse> AddAsync(CategoryCreateParams category)
+        public async Task<SpResponse> AddAsync(Category category)
         {
             var connection = _context.Database.GetDbConnection();
 
-            return await connection.QueryFirstOrDefaultAsync<SpResponse>(
+            // Tự động map tham số từ Entity dựa trên Metadata của Store
+            var parameters = await DapperHelper.MapParametersAsync(connection, "sp_InsertCategory", category);
+
+            var response = await connection.QueryFirstOrDefaultAsync<SpResponse>(
                 "sp_InsertCategory",
-                 category,
+                 parameters,
                 commandType: CommandType.StoredProcedure
-            ) ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
-        }
+            );
 
-        public async Task<SpResponse> UpdateAsync(CategoryUpdateParams parameters)
+            if (response != null && !string.IsNullOrEmpty(response.Message))
+            {
+                response.Message = _localizer[response.Message];
+            }
+
+            return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
+        }
+        public async Task<SpResponse> UpdateAsync(Category category)
         {
             var connection = _context.Database.GetDbConnection();
-            return await connection.QueryFirstOrDefaultAsync<SpResponse>(
+
+            // Tự động map tham số cho hàm Update
+            var parameters = await DapperHelper.MapParametersAsync(connection, "sp_UpdateCategory", category);
+
+            var response = await connection.QueryFirstOrDefaultAsync<SpResponse>(
                 "sp_UpdateCategory",
                 parameters,
                 commandType: CommandType.StoredProcedure
-            ) ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
+            );
+
+            if (response != null && !string.IsNullOrEmpty(response.Message))
+            {
+                response.Message = _localizer[response.Message];
+            }
+
+            return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
         }
 
         public async Task<SpResponse> DeleteAsync(int id)

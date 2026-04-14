@@ -36,7 +36,7 @@ namespace MyApp.Application.Store_Services
 
         public async Task<SpResponse> Create(Category_DTO dto)
         {
-            var newCategory = _mapper.Map<CategoryCreateParams>(dto);
+            var newCategory = _mapper.Map<Category>(dto);
             return await _repo.AddAsync(newCategory);
         }
 
@@ -50,9 +50,7 @@ namespace MyApp.Application.Store_Services
 
             _mapper.Map(dto, existingCategory);
 
-            var updateParams = _mapper.Map<CategoryUpdateParams>(existingCategory);
-
-            return await _repo.UpdateAsync(updateParams);
+            return await _repo.UpdateAsync(existingCategory);
         }
 
         public async Task<SpResponse> Delete(int id)
