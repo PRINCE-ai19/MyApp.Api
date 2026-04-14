@@ -186,6 +186,12 @@
   <data name="RegisterSuccess" xml:space="preserve">
     <value>Đăng ký tài khoản thành công!</value>
   </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Tên đăng nhập hoặc mật khẩu không chính xác.</value>
+  </data>
+  <data name="AccountLocked" xml:space="preserve">
+    <value>Tài khoản của bạn đã bị khóa hoặc không hoạt động.</value>
+  </data>
   <data name="ERROR_UNKNOWN_DATABASE" xml:space="preserve">
     <value>Lỗi không xác định từ Database.</value>
   </data>

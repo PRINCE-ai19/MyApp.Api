@@ -186,6 +186,12 @@
   <data name="RegisterSuccess" xml:space="preserve">
     <value>Account registered successfully!</value>
   </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Invalid username or password.</value>
+  </data>
+  <data name="AccountLocked" xml:space="preserve">
+    <value>Your account is locked or inactive.</value>
+  </data>
   <data name="ERROR_UNKNOWN_DATABASE" xml:space="preserve">
     <value>Unknown database error</value>
   </data>

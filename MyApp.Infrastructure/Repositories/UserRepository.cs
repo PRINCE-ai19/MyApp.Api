@@ -6,7 +6,7 @@ using MyApp.Domain.Common;
 using MyApp.Domain.Entities;
 using MyApp.Domain.Interfaces;
 using MyApp.Infrastructure.Data.Context;
-//using MyApp.Infrastructure.Helpers;
+using MyApp.Infrastructure.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -29,8 +29,12 @@ namespace MyApp.Infrastructure.Repositories
 
         public async Task<User?> GetUserByUsernameAsync(string username)
         {
-            return await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == username && u.RecordStatus == "1");
+            var connection = _context.Database.GetDbConnection();
+            return await connection.QueryFirstOrDefaultAsync<User>(
+                "sp_GetUserByUsername",
+                new { Username = username },
+                commandType: CommandType.StoredProcedure
+            );
         }
 
         public async Task<bool> UpdateUserRefreshTokenAsync(User user)
@@ -45,11 +49,11 @@ namespace MyApp.Infrastructure.Repositories
             var connection = _context.Database.GetDbConnection();
             
           
-           // var parameters = await DapperHelper.MapParametersAsync(connection, "sp_RegisterUser", user);
+           var parameters = await DapperHelper.MapParametersAsync(connection, "sp_RegisterUser", user);
 
             var response = await connection.QueryFirstOrDefaultAsync<SpResponse>(
                 "sp_RegisterUser",
-              //  parameters,
+               parameters,
                 commandType: CommandType.StoredProcedure
             );
 

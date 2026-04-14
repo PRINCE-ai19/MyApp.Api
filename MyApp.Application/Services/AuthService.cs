@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using MyApp.Domain.Common;
 using MyApp.Domain.Entities;
+using Microsoft.Extensions.Localization;
+using MyApp.Application.Resources;
 
 namespace MyApp.Application.Services
 {
@@ -15,11 +17,13 @@ namespace MyApp.Application.Services
     {
         private readonly IUserRepository _userRepo;
         private readonly IJwtRepository _jwtService;
+        private readonly IStringLocalizer<SharedResource> _localizer;
 
-        public AuthService(IUserRepository userRepo, IJwtRepository jwtService)
+        public AuthService(IUserRepository userRepo, IJwtRepository jwtService, IStringLocalizer<SharedResource> localizer)
         {
             _userRepo = userRepo;
             _jwtService = jwtService;
+            _localizer = localizer;
         }
 
         public async Task<LoginResponse> LoginAsync(LoginRequest request)
@@ -30,7 +34,12 @@ namespace MyApp.Application.Services
        
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHass))
             {
-                throw new Exception("Tài khoản hoặc mật khẩu không đúng!");
+                throw new Exception(_localizer["InvalidCredentials"]);
+            }
+
+            if (user.RecordStatus != "1")
+            {
+                throw new Exception(_localizer["AccountLocked"]);
             }
 
             // 3. Tạo cặp Token
