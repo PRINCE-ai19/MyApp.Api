@@ -85,3 +85,30 @@
 - [ ] **Phát triển UI Admin**: Nhúng các Endpoint `/Rotev2` (Dapper/MediatR) vào giao diện React/Vue để kiểm thử đầu-cuối.
 - [ ] **Chuyển đổi Product**: Tiếp tục áp dụng mô hình CQRS & MediatR cho module Sản phẩm (Product).
 - [ ] **Security**: Kiểm tra lại các trường nhạy cảm trong DTO để tránh lộ dữ liệu không cần thiết lên Swagger.
+
+---
+## Tiến độ công việc - 14/04/2026 (Cập nhật 17:15 PM)
+
+### 1. Đa ngôn ngữ (Localization) cho Stored Procedures - [HOÀN THÀNH]
+- [x] **Category Module**:
+    - [x] Cập nhật `sp_InsertCategory` & `sp_UpdateCategory` để trả về Resource Keys thay vì chuỗi tiếng Việt cứng.
+    - [x] Tích hợp `IStringLocalizer` vào `CategoryRepository_store` để dịch thông báo từ Database.
+    - [x] Bổ sung bộ Resource Keys: `DuplicateCategoryCode`, `InvalidCreatedDate`, `InsertCategorySuccess`, `UpdateCategorySuccess`.
+
+### 2. Hệ thống Định danh & Bảo mật (Identity) - [HOÀN THÀNH]
+- [x] **Sửa lỗi hệ thống**:
+    - [x] Fix lỗi khai báo `IJwtService` (sai kiểu class/interface và access modifier).
+    - [x] Sửa lỗi cú pháp JSON trong `appsettings.json` làm ứng dụng không khởi động được.
+    - [x] Khắc phục lỗi Dependency Injection cho `IJwtRepository` trong `Program.cs`.
+- [x] **Tính năng Đăng ký (Register)**:
+    - [x] Triển khai `sp_RegisterUser` (validate trùng Username/Email, quản lý Transaction).
+    - [x] Tích hợp mã hóa mật khẩu `BCrypt` chuẩn tại tầng Application.
+    - [x] Xây dựng `RegisterRequest` DTO và hoàn thiện endpoint API.
+- [x] **Refactor Đăng nhập (Login)**:
+    - [x] Chốt phương án sử dụng Stored Procedure `sp_GetUserByUsername` kết hợp Dapper.
+    - [x] Tích hợp kiểm tra trạng thái tài khoản (`RecordStatus`) và trả về lỗi đa ngôn ngữ (`InvalidCredentials`, `AccountLocked`).
+
+### 3. Công việc tiếp theo
+- [ ] **Module Product**: Áp dụng cơ chế trả về Resource Key từ SP tương tự module Category.
+- [ ] **Refresh Token**: Hoàn thiện logic persistence cho Refresh Token trong Database.
+- [ ] **Authorization**: Triển khai phân quyền dựa trên Role cho các endpoint Admin.
