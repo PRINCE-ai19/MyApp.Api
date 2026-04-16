@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using MyApp.Api.Filters;
 using MyApp.Application.Auto_mapper;
 using MyApp.Application.Resources;
@@ -99,6 +100,26 @@ namespace MyApp.Api
             builder.Services.AddSwaggerGen(c =>
             {
                 c.OperationFilter<SwaggerCultureFilter>();
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Nhập token của bạn theo định dạng: Bearer {token}",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = "bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                  {
+                   {
+                     new OpenApiSecurityScheme
+                      {
+                       Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                      },
+                     new string[]{}
+                   }
+                });
             });
              
                 Log.Information("Ứng dụng đang được khởi động");

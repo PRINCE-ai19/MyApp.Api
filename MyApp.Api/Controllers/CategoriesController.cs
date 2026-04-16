@@ -1,11 +1,12 @@
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic;
+using MyApp.Application.Features.Categories.Commands;
+using MyApp.Application.Features.Categories.Queries.GetListCategory;
 using MyApp.Application.Model_DTO;
 using MyApp.Application.Services;
-using MediatR;
-using MyApp.Application.Features.Categories.Queries.GetListCategory;
-using MyApp.Application.Features.Categories.Commands;
-using Microsoft.VisualBasic;
 
 namespace MyApp.Api.Controllers
 {
@@ -23,6 +24,7 @@ namespace MyApp.Api.Controllers
         }
 
         [HttpGet("lay/category")]
+        [Authorize]
         public async Task<IActionResult> Get()
         {
             var data = await _sender.Send(new GetListCategoryQuery());

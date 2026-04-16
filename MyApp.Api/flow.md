@@ -66,9 +66,208 @@ Khi `AccessToken` bị hết thời hạn 15 phút:
 
 ---
 
-**Tóm lại cho Intern dễ nhớ:**
-- JWT giống như cái **Thẻ Nhân Viên** để vô công ty. Lúc xin thì cần **Mã nhân viên / Pass**. 
-- Có thẻ rồi, mỗi lần qua cổng cứ quẹt thẻ. Máy (JWT Middleware) sẽ tự động coi dấu mộc (Signature - verify bằng `SecretKey`) có đúng do công ty cấp không, thẻ hết hạn (Expiration) chưa.
-- Thẻ xài tầm 15 phút là bị hết hạn (do Rule công ty khắc nghiệt =]]). Khi đó phải dùng **Giấy xác nhận gia hạn (Refresh token)** mang tới phòng HCĐN để xin cấp cái Thẻ (Access Token) mới chứ không phải nộp lại Form xin việc (User/Pass).
+## 5. Giải thích mã nguồn (.cs) trong thực tế (AuthService.cs)
 
-Là lập trình viên .NET, em chỉ cần học làm quen với thư viện `System.IdentityModel.Tokens.Jwt` là có thể tự tay Generate token rồi nhé. Nếu có chỗ nào chưa rõ khi coi code `AuthService` hay `Program.cs` thì nhắn anh. Code vui nha!
+Bây giờ anh em mình dòm thẳng vào file `MyApp.Application/Services/AuthService.cs` nhé, anh sẽ phân tích cho em đoạn code Đăng ký & Đăng nhập hoạt động như thế nào, và mật mã được an toàn ra sao.
+
+### 5.1. Khi người dùng Đăng ký (RegisterAsync)
+
+```csharp
+public async Task<SpResponse> RegisterAsync(RegisterRequest request)
+{
+    var user = new User
+    {
+        Username = request.Username,
+        // Dùng thư viện BCrypt để mã hóa (Hash) Password!
+        PasswordHass = BCrypt.Net.BCrypt.HashPassword(request.Password),
+        FullName = request.FullName,
+        Email = request.Email,
+        Role = "User"
+    };
+
+    return await _userRepo.RegisterAsync(user);
+}
+```
+
+**Thuật toán mã hóa BCrypt là gì và tại sao lại dùng nó?**
+- Trong dự án này (và mọi dự án nghiêm túc), mật khẩu **không bao giờ** được lưu dưới dạng chữ bình thường (plaintext) như chữ `123456`. 
+- Đoạn code `BCrypt.HashPassword` sẽ dùng thuật toán mã hóa một chiều **BCrypt** để biến chuỗi `123456` thành một chuỗi mã hóa (Hash String) như vầy: `$2a$11$N9lkxyz...`.
+- Lưu ý: Đây là mã hóa **MỘT CHIỀU**, tức là từ cái chuỗi `$2a$11...` đó, **KHÔNG MỘT AI** (kể cả Tech Lead hay Hacker hack được Database) có thể dịch ngược lại ra chữ `123456` được! Điều này bảo vệ an toàn tuyệt đối cho người dùng nếu DB bị lộ.
+
+### 5.2. Khi người dùng Đăng nhập (LoginAsync)
+
+Vậy khi User nhập chữ "123456" để đăng nhập, làm sao Backend biết đó là đúng nếu đã không thể giải ngược mã?
+
+```csharp
+public async Task<LoginResponse> LoginAsync(LoginRequest request)
+{
+    // Bước 1: Lấy tài khoản từ DB lên theo Username
+    var user = await _userRepo.GetUserByUsernameAsync(request.Username);
+
+    // Bước 2: Dùng BCrypt.Verify để kiểm tra Mật khẩu
+    if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHass))
+    {
+        throw new Exception(_localizer["InvalidCredentials"]); // Lỗi: Sai Username / Password!
+    }
+
+    // ... (Code check tài khoản khoá)
+
+    // Bước 3: Nếu đúng, gen ra cặp Token
+    var accessToken = _jwtService.GenerateAccessToken(user);
+    var refreshToken = _jwtService.GenerateRefreshToken();
+
+    // Bước 4: Cập nhật RefreshToken mới vô Table User, hạn 7 ngày
+    user.RefreshToken = refreshToken;
+    user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
+    await _userRepo.UpdateUserRefreshTokenAsync(user);
+
+    // Trả về cho bên Frontend
+    return new LoginResponse
+    {
+        AccessToken = accessToken,
+        RefreshToken = refreshToken,
+        Username = user.Username
+    };
+}
+```
+
+**Logic kì diệu nằm ở dòng lệnh `BCrypt.Verify(...)`**:
+1. Hàm `Verify()` sẽ tự động mang chuỗi mật khẩu thô ráp `123456` của người dùng nhập vào.
+2. Nó dùng đúng "gia vị băm" (Salt) nằm lẫn trong chuỗi `$2a$11...` của DB để băm con `123456` kia lại 1 lần nữa.
+3. Chạy thuật toán xong, nếu kết quả trả ra GIỐNG HỆT với chuỗi băm nằm dưới DB => Có nghĩa người dùng đã nhập **đúng** mật khẩu thô ban đầu => **Xác thực thành công!**.
+4. Lúc này Server mới tự tin nhờ `_jwtService` vẽ bùa ra cái `AccessToken` và trả về cho Client chép vào tay! Đồng thời lưu cái `RefreshToken` vào DB với thời hạn là 7 ngày (`AddDays(7)`) để sau dùng cho luồng Làm mới Token!
+
+---
+
+## 6. Giải thích chi tiết Code tạo Token (JwtRepository.cs)
+
+Bây giờ anh em mình cùng "mổ xẻ" file `MyApp.Infrastructure/Services/JwtService.cs` (nơi chứa class `JwtRepository`) để xem các bước cụ thể khi Server "vẽ bùa" ra cái Token nhé.
+
+### 6.1. Hàm tạo Access Token (`GenerateAccessToken`)
+
+Đây là hàm quan trọng nhất, nơi biến thông tin User thành chuỗi JWT có chữ ký bảo mật.
+
+```csharp
+public string GenerateAccessToken(User user)
+{
+    // Bước 1: Tạo danh sách các "Claims" (Thông tin đính kèm)
+    // Claim giống như những "nhãn dán" thông tin dán lên tấm thẻ
+    var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // ID của User (để biết là ai)
+        new Claim(ClaimTypes.Name, user.Username),               // Tên đăng nhập
+        new Claim(ClaimTypes.Role, user.Role ?? "User")          // Quyền hạn (để check Permission)
+    };
+
+    // Bước 2: Lấy SecretKey từ appsettings.json và tạo Khóa bảo mật (Symmetric Key)
+    // Encoding.UTF8.GetBytes biến chuỗi text bí mật thành mảng byte để máy tính tính toán
+    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:SecretKey"]));
+
+    // Bước 3: Khai báo Thuật toán mã hóa & Chữ ký (HmacSha256)
+    // SigningCredentials là sự kết hợp giữa Chìa khóa và Thuật toán để "đóng dấu"
+    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+    // Bước 4: Tạo đối tượng Token với đầy đủ thông tin (Metadata)
+    var token = new JwtSecurityToken(
+        issuer: _config["JwtSettings:Issuer"],   // Server phát hành (MyApp_Backend)
+        audience: _config["JwtSettings:Audience"], // Nơi sử dụng (MyApp_Frontend)
+        claims: claims,                            // Thông tin User vừa tạo ở Bước 1
+        expires: DateTime.Now.AddMinutes(Convert.ToDouble(_config["JwtSettings:AccessTokenExpiration"])), // Thời hạn 15p
+        signingCredentials: creds                  // Chữ ký bảo mật tạo ở Bước 3
+    );
+
+    // Bước 5: Chuyển đối tượng Token (Object) thành chuỗi String (Chuỗi 3 phần)
+    // Hàm WriteToken này sẽ gộp Header.Payload.Signature lại cho mình
+    return new JwtSecurityTokenHandler().WriteToken(token);
+}
+```
+
+**Tại sao phải làm nhiều bước vậy?**
+- **Claims**: Giống như thông tin in trên thẻ. Khi Client gửi Token lên các API sau này, Server chỉ việc "bóc" cái nhãn này ra là biết ngay "Ông này là User ID 10, Role là Admin", khỏi cần vào DB tìm lại cho mất công.
+- **SigningCredentials**: Đây là linh hồn của bảo mật. Nhờ có `SecretKey` phối hợp với thuật toán, nếu hacker cố tình sửa Role từ `User` thành `Admin` trong Token, chữ ký Signature sẽ sai ngay lập tức vì hacker không có `SecretKey` của mình.
+
+### 6.2. Hàm tạo Refresh Token (`GenerateRefreshToken`)
+
+Khác với Access Token (là 1 JWT phức tạp), Refresh Token ở dự án mình đơn giản chỉ là một chuỗi "mã số bí mật" ngẫu nhiên.
+
+```csharp
+public string GenerateRefreshToken()
+{
+    // Tạo một chuỗi ngẫu nhiên (GUID) kết hợp với mốc thời gian (Ticks)
+    // Kết quả: "a1b2c3d4... + 6384883..." (Cực kỳ khó đoán và duy nhất)
+    return Guid.NewGuid().ToString() + DateTime.Now.Ticks;
+}
+```
+
+**Tại sao Refresh Token lại đơn giản hơn Access Token?**
+- Vì bản thân chuỗi này không mang dữ liệu gì cả. Nó chỉ đóng vai trò là một **"Mã số đối soát"**.
+- Mã này được lưu cứng vào Database (cột `RefreshToken`). 
+- Khi thẻ Access Token hết hạn, Client đưa cái mã này lên. Server chỉ việc vào DB tìm: "Có ai đang cầm mã bí mật này không?". Nếu thấy User A đang cầm mã này và mã vẫn còn hạn (7 ngày), Server mới tin tưởng và cấp Access Token mới cho User A.
+
+---
+
+## 7. Giải thích cấu hình    (Program.cs)
+
+Đây là phần "Trái tim" của hệ thống xác thực. Nếu thiếu phần này, Server sẽ không biết cách đọc Token em gửi lên, cũng như không biết cái Token đó có hợp lệ hay không. Em dòm vào file `Program.cs` của dự án mình nhé.
+
+### 7.1. Đăng ký dịch vụ Xác thực (Service Registration)
+
+Đoạn code này nằm ở phần đầu file `Program.cs`, dùng để khai báo với ASP.NET Core rằng: "Này, dự án tôi dùng JWT để kiểm soát ra vào đấy nhé!".
+
+```csharp
+builder.Services.AddAuthentication(options => {
+    // 1. Quy định kiểu xác thực mặc định là JwtBearer (Mã vạch JWT)
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options => {
+    // 2. Cấu hình các quy tắc để kiểm tra cái Token
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,           // Kiểm tra xem có đúng "Nơi cấp" (Issuer) mình quy định không
+        ValidateAudience = true,         // Kiểm tra xem có đúng "Người nhận" (Audience) mình quy định không
+        ValidateLifetime = true,         // Kiểm tra xem Token còn hạn dùng không (Expiration)
+        ValidateIssuerSigningKey = true, // Quan trọng nhất: Kiểm tra "Dấu mộc/Chữ ký" xem có khớp với SecretKey không
+
+        // Lấy các giá trị từ file appsettings.json để đối soát
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]))
+    };
+});
+```
+
+**Giải thích cho Intern dễ hiểu:**
+- `AddAuthentication`: Giống như việc công ty lắp đặt một cái **Máy Quẹt Thẻ** ở cổng chính.
+- `TokenValidationParameters`: Chính là **Bộ quy tắc** nạp vào máy. Ví dụ: Thẻ phải có logo công ty (Issuer), Thẻ phải còn hạn (Lifetime), và quan trọng nhất là tấm hình trên thẻ phải có độ phân giải và mã hóa đúng kiểu của máy (Signature). Nếu thiếu một trong các yếu tố này, máy sẽ báo "Tít tít" (Lỗi 401) và không mở cửa.
+
+### 7.2. Kích hoạt Middleware trong Pipeline (Request Pipeline)
+
+Sau khi mua máy về (Đăng ký dịch vụ), mình phải cắm điện và đặt nó đúng vị trí trong hành lang đi lại của Request.
+
+```csharp
+// ... (Các middleware khác như CORS, Localization)
+
+app.UseAuthentication(); // 1. Xác thực: "Anh là ai?" (Kiểm tra thẻ)
+
+app.UseAuthorization();  // 2. Phân quyền: "Anh được vào đây không?" (Kiểm tra Role Admin/User trên thẻ)
+
+// ... (Sau đó mới tới Controllers)
+app.MapControllers();
+```
+
+**Lưu ý cực kỳ quan trọng về Thứ tự (Order):**
+- **`app.UseAuthentication()` phải nằm TRƯỚC `app.UseAuthorization()`**. Vì em phải biết họ là ai cái đã, rồi mới quyết định xem họ có quyền vào phòng Admin hay không.
+- Cả hai cái này phải nằm **TRƯỚC `app.MapControllers()`**. Để khi request chạy tới các hàm xử lý của em (Controller), nó đã mang sẵn thông tin "Thân phận" (`User.Identity`) rồi.
+
+---
+
+**Tóm lại cho Intern dễ nhớ:**
+- JWT giống như cái **Thẻ Nhân Viên** để vô công ty. Lúc rải CV đăng ký thì cần viết **Mã nhân viên / Pass**. 
+- Để bảo đảm an toàn sổ sách, bảo vệ công ty không chép Pass của em ra sổ, mà dùng cối xay thịt **BCrypt** băm (hash) Pass đó ra và lưu vào sổ dưới dạng cục thịt băm (`PasswordHass`). 
+- Lúc đến cổng ngày đầu, em báo Mật khẩu. Ông bảo vệ lại băm thử nghiệm đúng cái con Mật khẩu em vừa báo. Khớp cục thịt băm trong sổ (`BCrypt.Verify()`) thì ok cho đi làm cái Thẻ mộc đỏ (Gen Token `AccessToken`).
+- Có Thẻ rồi, trưa đi ăn đi dạo các phòng ban (gọi API) em khỏi đọc Pass, cứ đưa Thẻ (Access Token) cho **Máy quẹt thẻ (Middleware)** quẹt cái "Tít".
+- Máy soát thẻ (JWT Middleware - `AddJwtBearer`) sẽ tự động coi dấu mộc trên Cục thẻ có đúng của trường (Issuer) và không bị sửa chữa không (dùng `SecretKey` trên appsetting), cũng như là thẻ có bị hết hạn 15p (Expiration) hay chưa.
+- Nếu thẻ OK, nó sẽ cho phép em đi tiếp qua cửa **Phân quyền (Authorization)** để xem em là Nhân viên hay Sếp (Role) rồi mới cho vào phòng tương ứng.
+
+Là lập trình viên .NET, em chỉ cần học làm quen với thư viện `System.IdentityModel.Tokens.Jwt` (cho JWT), `BCrypt.Net-Next` (cho Hashing) và cách cấu hình Middleware trong `Program.cs` là có thể cứng cáp phần xác thực Authentication này rồi nhé. Code vui nha!
