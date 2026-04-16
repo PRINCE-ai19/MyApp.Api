@@ -108,7 +108,39 @@
     - [x] Chốt phương án sử dụng Stored Procedure `sp_GetUserByUsername` kết hợp Dapper.
     - [x] Tích hợp kiểm tra trạng thái tài khoản (`RecordStatus`) và trả về lỗi đa ngôn ngữ (`InvalidCredentials`, `AccountLocked`).
 
-### 3. Công việc tiếp theo
-- [ ] **Module Product**: Áp dụng cơ chế trả về Resource Key từ SP tương tự module Category.
-- [ ] **Refresh Token**: Hoàn thiện logic persistence cho Refresh Token trong Database.
-- [ ] **Authorization**: Triển khai phân quyền dựa trên Role cho các endpoint Admin.
+---
+## Tiến độ công việc - 15/04/2026 (Cập nhật 17:40 PM)
+
+### 1. Hạ tầng & Helper Generic (StoreHelper) - [HOÀN THÀNH]
+- [x] **Xây dựng `StoreHelper`**: 
+    - [x] Triển khai Interface `IStoreHelper` và lớp `StoreHelper` dựa trên Dapper & Reflection.
+    - [x] Tự động hóa việc map tham số từ Object C# sang Parameters của Stored Procedure.
+    - [x] Đăng ký Dependency Injection tập trung trong `Program.cs`.
+- [x] **Refactor Category Module**:
+    - [x] Chuyển đổi `CategoryRepository_store` sang sử dụng `StoreHelper` (giảm 70% lượng code lặp lại).
+
+### 2. Module Sản phẩm (Product CRUD via Stored Procedures) - [HOÀN THÀNH]
+- [x] **Thiết kế Database (SQL)**:
+    - [x] Hoàn thiện bộ SP: `sp_GetProductsByCategoryId`, `sp_GetProductById`, `sp_InsertProduct`, `sp_UpdateProduct`, `sp_DeleteProduct`.
+    - [x] Triển khai logic **Soft Delete** (`RecordStatus <> '0'`) và **Validation** (trùng mã, trống tên, sai logic danh mục).
+- [x] **Phát triển Backend Layer**:
+    - [x] Triển khai `ProductRepository_store` tích hợp `StoreHelper`.
+    - [x] Xây dựng `ProductStoreService` quản lý logic nghiệp vụ và mapping DTO.
+    - [x] Hoàn thiện `ProductStoreController` với prefix `/Rotev2/`.
+- [x] **Đa ngôn ngữ & Localization**:
+    - [x] Tích hợp `IStringLocalizer` để dịch các thông báo lỗi trả về từ SQL `RAISERROR`.
+
+### 3. Fix Bug & Tối ưu hóa (Crucial Fixes) - [HOÀN THÀNH]
+- [x] **Sửa lỗi SQL Logic**: Đồng bộ hóa toàn bộ logic kiểm tra bản ghi hoạt động sang điều kiện `RecordStatus <> '0'`.
+- [x] **Sửa lỗi Column Mapping**: 
+    - [x] Fix lỗi `sp_InsertProduct` gán nhầm mã Code vào cột trạng thái.
+    - [x] Fix lỗi `sp_GetProductById` thiếu cột `Id` và `CategoryId` dẫn đến mapping sai trên UI.
+- [x] **Tối ưu AutoMapper**: 
+    - [x] Cấu hình lại `Products_mapper` để xử lý chuyển đổi `string` (dd/MM/yyyy) sang `DateTime` một cách an toàn.
+    - [x] Khắc phục lỗi "String '32' is not a valid DateTime" do mapping nhầm trường CategoryId.
+
+### 4. Công việc tiếp theo
+- [ ] **Mở rộng Module**: Áp dụng mô hình StoreHelper cho các module còn lại (Order, Customer).
+- [ ] **Frontend**: Nhúng Endpoint Product `/Rotev2` vào giao diện quản trị.
+- [ ] **Unit Test**: Viết test case cho `StoreHelper` để đảm bảo mapping tham số luôn chính xác.
+

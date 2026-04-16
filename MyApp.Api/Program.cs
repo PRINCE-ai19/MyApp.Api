@@ -14,8 +14,9 @@ using MyApp.Infrastructure.Data.Context;
 using MyApp.Infrastructure.Repositories;
 using MyApp.Infrastructure.Repositories_Store;
 using MyApp.Infrastructure.Services;
-using Serilog;
+using MyApp.Infrastructure.Helpers;
 using System.Text;
+using Serilog;
 
 namespace MyApp.Api
 {
@@ -25,7 +26,7 @@ namespace MyApp.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+           
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("MyDb")));
 
@@ -33,12 +34,20 @@ namespace MyApp.Api
             builder.Services.AddScoped<ICategoryRepository_store, CategoryRepository_store>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ICategoryStoreService, CategoryStoreService>();
-
-            builder.Services.AddScoped<IProductRepository, ProductRepository>();
-            builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IJwtRepository, JwtRepository>();
+
+        
+            builder.Services.AddScoped<IProductRepository_store, ProductRepository_store>();
+            builder.Services.AddScoped<IProductStoreService, ProductStoreService>();
+            builder.Services.AddScoped<IStoreHelper, StoreHelper>();
+
+          
+            builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(MyApp.Application.AssemblyReference).Assembly));
             builder.Services.AddAutoMapper(typeof(Products_mapper));
 
@@ -51,7 +60,7 @@ namespace MyApp.Api
                     {
                         ValidateIssuer = true,
                         ValidateAudience = true,
-                        ValidateLifetime = true,
+                        ValidateLifetime = true, // mỗi lần gửi request thằng bóc token đọc thời gian hết hạn 
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
                         ValidAudience = builder.Configuration["JwtSettings:Audience"],
@@ -150,9 +159,9 @@ namespace MyApp.Api
 
                 app.UseHttpsRedirection();
 
-            app.UseAuthentication();
+                app.UseAuthentication();
 
-            app.UseAuthorization();
+                app.UseAuthorization();
 
 
                 app.MapControllers();

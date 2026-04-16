@@ -12,5 +12,7 @@ namespace MyApp.Application.Services
     {
         Task<LoginResponse> LoginAsync(LoginRequest request);
         Task<SpResponse> RegisterAsync(RegisterRequest request);
+
+        Task<LoginResponse> RefreshTokenAsync(string refreshToken);
     }
 }

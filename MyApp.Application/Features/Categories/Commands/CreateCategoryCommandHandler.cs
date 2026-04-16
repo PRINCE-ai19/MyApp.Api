@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace MyApp.Application.Features.Categories.Commands
 {
-    public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, SpResponse>
+/*    public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, SpResponse>
     {
         private readonly ICategoryRepository_store _repository;
 
@@ -36,5 +36,5 @@ namespace MyApp.Application.Features.Categories.Commands
             var newCategory = _mapper.Map<Category>(request.Category);
              return await _repository.AddAsync(newCategory); 
         }
-    }
+    }*/
 }

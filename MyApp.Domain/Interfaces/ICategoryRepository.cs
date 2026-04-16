@@ -9,7 +9,7 @@ namespace MyApp.Domain.Interfaces
 {
     public interface ICategoryRepository
     {
-        // Trả về dữ liệu thô từ DB
+       
         Task<IEnumerable<Category>> GetAllCategoriesAsync();
 
         Task Add(Category category);

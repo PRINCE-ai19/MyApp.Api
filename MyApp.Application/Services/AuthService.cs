@@ -1,15 +1,17 @@
-using MyApp.Application.Model_DTO;
-using MyApp.Domain.Interfaces;
+using AutoMapper;
 using BCrypt.Net;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
+using MyApp.Application.Model_DTO;
+using MyApp.Application.Resources;
+using MyApp.Domain.Common;
+using MyApp.Domain.Entities;
+using MyApp.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MyApp.Domain.Common;
-using MyApp.Domain.Entities;
-using Microsoft.Extensions.Localization;
-using MyApp.Application.Resources;
 
 namespace MyApp.Application.Services
 {
@@ -17,13 +19,17 @@ namespace MyApp.Application.Services
     {
         private readonly IUserRepository _userRepo;
         private readonly IJwtRepository _jwtService;
+        private readonly IMapper _mapper;
         private readonly IStringLocalizer<SharedResource> _localizer;
+        private readonly ILogger<AuthService> _logger;
 
-        public AuthService(IUserRepository userRepo, IJwtRepository jwtService, IStringLocalizer<SharedResource> localizer)
+        public AuthService(IUserRepository userRepo, IJwtRepository jwtService, IStringLocalizer<SharedResource> localizer, IMapper mapper, ILogger<AuthService> logger)
         {
             _userRepo = userRepo;
             _jwtService = jwtService;
             _localizer = localizer;
+            _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<LoginResponse> LoginAsync(LoginRequest request)
@@ -34,19 +40,19 @@ namespace MyApp.Application.Services
        
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHass))
             {
-                throw new Exception(_localizer["InvalidCredentials"]);
+                _logger.LogError(_localizer["InvalidCredentials"]);
             }
 
             if (user.RecordStatus != "1")
             {
-                throw new Exception(_localizer["AccountLocked"]);
+                _logger.LogError(_localizer["AccountLocked"]);
             }
 
-            // 3. Tạo cặp Token
+            //  Tạo cặp Token
             var accessToken = _jwtService.GenerateAccessToken(user);
             var refreshToken = _jwtService.GenerateRefreshToken();
 
-            // 4. Cập nhật Refresh Token vào User (Logic LINQ đã có trong Repo)
+            // Cập nhật Refresh Token vào User (Logic LINQ đã có trong Repo)
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
             await _userRepo.UpdateUserRefreshTokenAsync(user);
@@ -61,7 +67,7 @@ namespace MyApp.Application.Services
 
         public async Task<SpResponse> RegisterAsync(RegisterRequest request)
         {
-            var user = new User
+            /*var user = new User
             {
                 Username = request.Username,
                 PasswordHass = BCrypt.Net.BCrypt.HashPassword(request.Password),
@@ -70,7 +76,32 @@ namespace MyApp.Application.Services
                 Role = "User"
             };
 
+            return await _userRepo.RegisterAsync(user);*/
+            var user  = _mapper.Map<User>(request);
             return await _userRepo.RegisterAsync(user);
+        }
+
+        public async Task<LoginResponse> RefreshTokenAsync(string refreshToken)
+        {
+            var user = await _userRepo.GetUserByRefreshTokenAsync(refreshToken);
+
+            if(user == null || user.RefreshTokenExpiryTime <= DateTime.Now)
+            {
+                _logger.LogError(_localizer["expertoken"]);
+            }
+            var newAccessToken = _jwtService.GenerateAccessToken(user);
+            var newRefreshToken = _jwtService.GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
+            await _userRepo.UpdateUserRefreshTokenAsync(user);
+
+            return new LoginResponse
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
+                Username = user.Username
+            };
         }
     }
 }

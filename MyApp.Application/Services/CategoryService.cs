@@ -57,7 +57,7 @@ namespace MyApp.Application.Services
             NewCategory.Code = dTO.code.Trim().ToUpper();
             NewCategory.RecordStatus="1";
             await _categoryRepo.Add(NewCategory);
-            return new SpResponse { Success = true, Message = "Thêm danh mục thành công!" };
+            return new SpResponse { Success = true, Message = _localizer["InsertCategorySuccess"] };
         }
 
         public async Task<SpResponse> UpdateCategory(int id, CategoryUpdateDto dto)
@@ -85,7 +85,7 @@ namespace MyApp.Application.Services
             var updatedCategory = _mapper.Map(dto, existingCategory);
             updatedCategory.Code = dto.code.Trim().ToUpper();
             await _categoryRepo.UpdateAsync(updatedCategory);
-            return new SpResponse { Success = true, Message = "Cập nhật danh mục thành công!" };
+            return new SpResponse { Success = true, Message = _localizer["UpdateCategorySuccess"] };
         }
 
         public async Task<SpResponse> DeleteCategory(int id)
@@ -121,7 +121,7 @@ namespace MyApp.Application.Services
 
             await _categoryRepo.UpdateAsync(existingCategory);
 
-            return new SpResponse { Success = true, Message = "Xóa danh mục thành công!" };
+            return new SpResponse { Success = true, Message = _localizer["DeleteCategorySuccess"] };
         }
     }
 }

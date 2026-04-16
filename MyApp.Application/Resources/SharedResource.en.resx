@@ -171,28 +171,79 @@
   <data name="CategoryHasProducts" xml:space="preserve">
     <value>Cannot delete this category because it contains products.</value>
   </data>
-  <data name="UsernameRequired" xml:space="preserve">
-    <value>Username is required.</value>
+  <data name="DuplicateCategoryCode" xml:space="preserve">
+    <value>Category code already exists in the system.</value>
   </data>
-  <data name="PasswordRequired" xml:space="preserve">
-    <value>Password is required.</value>
+  <data name="InvalidCreatedDate" xml:space="preserve">
+    <value>Created date must be today. Future or past dates are not allowed.</value>
   </data>
-  <data name="DuplicateUsername" xml:space="preserve">
-    <value>Username already exists in the system.</value>
+  <data name="InsertCategorySuccess" xml:space="preserve">
+    <value>Category added successfully!</value>
   </data>
-  <data name="DuplicateEmail" xml:space="preserve">
-    <value>This email is already used by another account.</value>
-  </data>
-  <data name="RegisterSuccess" xml:space="preserve">
-    <value>Account registered successfully!</value>
-  </data>
-  <data name="InvalidCredentials" xml:space="preserve">
-    <value>Invalid username or password.</value>
-  </data>
-  <data name="AccountLocked" xml:space="preserve">
-    <value>Your account is locked or inactive.</value>
+  <data name="UpdateCategorySuccess" xml:space="preserve">
+    <value>Category updated successfully!</value>
   </data>
   <data name="ERROR_UNKNOWN_DATABASE" xml:space="preserve">
-    <value>Unknown database error</value>
+    <value>Unknown database error.</value>
+  </data>
+  <data name="Search_null" xml:space="preserve">
+    <value>Have not entered keyword yet</value>
+  </data>
+  <data name="InvalidCategoryId" xml:space="preserve">
+    <value>Invalid category Id.</value>
+  </data>
+  <data name="ProductNameRequired" xml:space="preserve">
+    <value>Product name is required.</value>
+  </data>
+  <data name="InvalidPrice" xml:space="preserve">
+    <value>Price must be greater than 0.</value>
+  </data>
+  <data name="ProductCodeRequired" xml:space="preserve">
+    <value>Product code is required.</value>
+  </data>
+  <data name="CategoryNotFoundOrDeleted" xml:space="preserve">
+    <value>Category not found or has been deleted.</value>
+  </data>
+  <data name="InsertProductSuccess" xml:space="preserve">
+    <value>Product added successfully!</value>
+  </data>
+  <data name="UpdateProductSuccess" xml:space="preserve">
+    <value>Product updated successfully!</value>
+  </data>
+  <data name="DeleteProductSuccess" xml:space="preserve">
+    <value>Product deleted successfully!</value>
+  </data>
+  <data name="UsernameRequired" xml:space="preserve">
+    <value>Username is required</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Password is required</value>
+  </data>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>Invalid email address</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Invalid username or password</value>
+  </data>
+  <data name="AccountLocked" xml:space="preserve">
+    <value>Your account has been locked</value>
+  </data>
+  <data name="InvalidCategory" xml:space="preserve">
+    <value>Invalid category</value>
+  </data>
+  <data name="DeleteCategorySuccess" xml:space="preserve">
+    <value>Category deleted successfully!</value>
+  </data>
+  <data name="DuplicateUsername" xml:space="preserve">
+    <value>Username already exists</value>
+  </data>
+  <data name="DuplicateEmail" xml:space="preserve">
+    <value>Email already exists</value>
+  </data>
+  <data name="RegisterSuccess" xml:space="preserve">
+    <value>User registered successfully</value>
+  </data>
+  <data name="expertoken" xml:space="preserve">
+    <value>Your login session has expired. Please log in again.</value>
   </data>
 </root>

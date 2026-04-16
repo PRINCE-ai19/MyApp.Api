@@ -3,40 +3,37 @@ using MyApp.Application.Resources;
 using MyApp.Domain.Common;
 using MyApp.Domain.Entities;
 using MyApp.Domain.Interfaces_store;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace MyApp.Infrastructure.Repositories_Store
 {
-    public class CategoryRepository_store : ICategoryRepository_store 
+    public class ProductRepository_store : IProductRepository_store
     {
         private readonly IStoreHelper _storeHelper;
         private readonly IStringLocalizer<SharedResource> _localizer;
-
-        public CategoryRepository_store(IStoreHelper storeHelper, IStringLocalizer<SharedResource> localizer)
+        public ProductRepository_store(IStoreHelper storeHelper, IStringLocalizer<SharedResource> localizer)
         {
             _storeHelper = storeHelper;
             _localizer = localizer;
         }
 
-       public async Task <IEnumerable<Category>> SearchCategory( string name)
+        public async Task<IEnumerable<Product>> GetAllProductAsync()
         {
-            return await _storeHelper.QueryAsync<Category>("sp_SearchCategories", new { SearchTerm = name });
+            return await _storeHelper.QueryAsync<Product>("sp_GetAllProducts");
         }
 
-        public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
+        public async Task<Product?> GetByIdAsync(int id)
         {
-            return await _storeHelper.QueryAsync<Category>("sp_GetAllCategories");
+            return await _storeHelper.QueryFirstOrDefaultAsync<Product>("sp_GetProductById", new { Id = id });
         }
 
-        public async Task<Category?> GetByIdAsync(int id)
+        public async Task<SpResponse> AddAsync(Product product)
         {
-            return await _storeHelper.QueryFirstOrDefaultAsync<Category>("sp_GetCategoryById", new { Id = id });
-        }
-
-        public async Task<SpResponse> AddAsync(Category category)
-        {
-           var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_InsertCategory", category);
+            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_InsertProduct", product);
 
             if (response != null && !string.IsNullOrEmpty(response.Message))
             {
@@ -46,9 +43,9 @@ namespace MyApp.Infrastructure.Repositories_Store
             return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
         }
 
-        public async Task<SpResponse> UpdateAsync(Category category)
+        public async Task<SpResponse> UpdateAsync(Product product)
         {
-            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_UpdateCategory", category);
+            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_UpdateProduct", product);
 
             if (response != null && !string.IsNullOrEmpty(response.Message))
             {
@@ -60,7 +57,7 @@ namespace MyApp.Infrastructure.Repositories_Store
 
         public async Task<SpResponse> DeleteAsync(int id)
         {
-            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_DeleteCategory", new { Id = id });
+            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_DeleteProduct", new { Id = id });
 
             if (response != null && !string.IsNullOrEmpty(response.Message))
             {
@@ -68,6 +65,11 @@ namespace MyApp.Infrastructure.Repositories_Store
             }
 
             return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
+        }
+
+        public async Task<IEnumerable<Product>> GetByCategoryIdAsync(int categoryId)
+        {
+            return await _storeHelper.QueryAsync<Product>("sp_GetProductsByCategoryId", new { CategoryId = categoryId });
         }
     }
 }

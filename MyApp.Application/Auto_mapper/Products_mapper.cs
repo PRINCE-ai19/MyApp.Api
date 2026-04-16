@@ -1,7 +1,7 @@
 using AutoMapper;
-using Microsoft.VisualBasic;
 using MyApp.Application.Model_DTO;
 using MyApp.Domain.Entities;
+using MyApp.Domain.Common;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,26 +15,21 @@ namespace MyApp.Application.Auto_mapper
     {
         public Products_mapper()
         {
+        
             CreateMap<Product_DTO, Product>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore()) 
                 .ForMember(dest => dest.RecordStatus, opt => opt.MapFrom(src => "1"))
-                .ForMember(
-                    d => d.CreatedAt,
-                    o => o.MapFrom(src =>
-                        string.IsNullOrWhiteSpace(src.CreatedAt)
-                            ? (DateTime?)null
-                            : DateTime.ParseExact(src.CreatedAt, "dd/MM/yyyy", new CultureInfo("vi-VN"))
-                    )
-                )
-                .ReverseMap()
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => 
+                    string.IsNullOrWhiteSpace(src.CreatedAt) 
+                        ? (DateTime?)null 
+                        : DateTime.ParseExact(src.CreatedAt, "dd/MM/yyyy", new CultureInfo("vi-VN"))));
 
-                .ForMember(
-                    d => d.CreatedAt,
-                    o => o.MapFrom(src =>
-                        src.CreatedAt.HasValue
-                            ? src.CreatedAt.Value.ToString("dd/MM/yyyy")
-                            : null
-                    )
-                );
+    
+            CreateMap<Product, Product_DTO>()
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => 
+                    src.CreatedAt.HasValue 
+                        ? src.CreatedAt.Value.ToString("dd/MM/yyyy") 
+                        : null));
 
             CreateMap<ProductUpdateDto, Product>().ReverseMap();
             CreateMap<CategoryUpdateDto, Category>()
@@ -42,14 +37,34 @@ namespace MyApp.Application.Auto_mapper
                 .ReverseMap();
 
             CreateMap<Category_DTO, Category>()
+                 .ForMember(dest => dest.Code, opt => opt.MapFrom(src => src.code))
                  .ForMember(dest => dest.RecordStatus, opt => opt.MapFrom(src => "1"))
-                .ReverseMap();
+                 .ForMember(
+                    d => d.CreatedDate,
+                    o => o.MapFrom(src =>
+                        string.IsNullOrWhiteSpace(src.CreatedDate)
+                            ? (DateTime?)null
+                            : DateTime.ParseExact(src.CreatedDate, "dd/MM/yyyy", new CultureInfo("vi-VN"))
+                    )
+                  );
+
+            CreateMap<Category, Category_DTO>()
+                .ForMember(dest => dest.code, opt => opt.MapFrom(src => src.Code))
+                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => 
+                    src.CreatedDate.HasValue 
+                        ? src.CreatedDate.Value.ToString("dd/MM/yyyy") 
+                        : null));
             CreateMap<Category, Category>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore());
                
 
             CreateMap<Product, ProductDetailDTO>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name));
+
+        
+
+         
+
        
         }
     }

@@ -44,9 +44,7 @@ namespace MyApp.Infrastructure.Repositories
 
         public async Task<Category> GetByIdAsync(int id)
         { 
-            return await _context.Categories.FindAsync(id);
-
-           
+            return await _context.Categories.FindAsync(id);    
         }
 
         public async Task<bool> CheckCodeExistedForOther(string code, int currentId)
@@ -65,7 +63,6 @@ namespace MyApp.Infrastructure.Repositories
             return await _context.Categories
                 .FirstOrDefaultAsync(x => x.Id == id && x.RecordStatus == "1");
         }
-
         public async Task<bool> HasRelatedProducts(int categoryId)
         { 
             return false; 

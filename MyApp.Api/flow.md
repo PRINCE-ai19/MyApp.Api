@@ -154,9 +154,9 @@ public string GenerateAccessToken(User user)
     // Claim giống như những "nhãn dán" thông tin dán lên tấm thẻ
     var claims = new List<Claim>
     {
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // ID của User (để biết là ai)
-        new Claim(ClaimTypes.Name, user.Username),               // Tên đăng nhập
-        new Claim(ClaimTypes.Role, user.Role ?? "User")          // Quyền hạn (để check Permission)
+         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // ID của User (để biết là ai)
+         new Claim(ClaimTypes.Name, user.Username),               // Tên đăng nhập
+         new Claim(ClaimTypes.Role, user.Role ?? "User")          // Quyền hạn (để check Permission)
     };
 
     // Bước 2: Lấy SecretKey từ appsettings.json và tạo Khóa bảo mật (Symmetric Key)
@@ -206,7 +206,7 @@ public string GenerateRefreshToken()
 
 ---
 
-## 7. Giải thích cấu hình    (Program.cs)
+## 7. Giải thích cấu hình Middleware (Program.cs)
 
 Đây là phần "Trái tim" của hệ thống xác thực. Nếu thiếu phần này, Server sẽ không biết cách đọc Token em gửi lên, cũng như không biết cái Token đó có hợp lệ hay không. Em dòm vào file `Program.cs` của dự án mình nhé.
 
@@ -269,5 +269,6 @@ app.MapControllers();
 - Có Thẻ rồi, trưa đi ăn đi dạo các phòng ban (gọi API) em khỏi đọc Pass, cứ đưa Thẻ (Access Token) cho **Máy quẹt thẻ (Middleware)** quẹt cái "Tít".
 - Máy soát thẻ (JWT Middleware - `AddJwtBearer`) sẽ tự động coi dấu mộc trên Cục thẻ có đúng của trường (Issuer) và không bị sửa chữa không (dùng `SecretKey` trên appsetting), cũng như là thẻ có bị hết hạn 15p (Expiration) hay chưa.
 - Nếu thẻ OK, nó sẽ cho phép em đi tiếp qua cửa **Phân quyền (Authorization)** để xem em là Nhân viên hay Sếp (Role) rồi mới cho vào phòng tương ứng.
+- Nếu Thẻ hết hạn, hãy dùng **Giấy xác nhận (Refresh Token)** cầm lên phòng Hành chính để họ đối chiếu sổ sách Database, nếu khớp họ sẽ in cho em cái Thẻ mới!
 
 Là lập trình viên .NET, em chỉ cần học làm quen với thư viện `System.IdentityModel.Tokens.Jwt` (cho JWT), `BCrypt.Net-Next` (cho Hashing) và cách cấu hình Middleware trong `Program.cs` là có thể cứng cáp phần xác thực Authentication này rồi nhé. Code vui nha!

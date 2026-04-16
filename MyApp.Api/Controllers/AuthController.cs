@@ -38,5 +38,19 @@ namespace MyApp.Api.Controllers
             }
             return BadRequest(result);
         }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> Refresh([FromBody] string refreshToken)
+        {
+            try
+            {
+                var result = await _authService.RefreshTokenAsync(refreshToken);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

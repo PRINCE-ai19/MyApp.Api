@@ -12,5 +12,7 @@ namespace MyApp.Application.Store_Services
         Task<SpResponse> Create(Category_DTO dto);
         Task<SpResponse> Update(int id, Category_DTO dto);
         Task<SpResponse> Delete(int id);
+
+        Task<IEnumerable<Category_DTO>> SearchCategoryByName(string name);
     }
 }

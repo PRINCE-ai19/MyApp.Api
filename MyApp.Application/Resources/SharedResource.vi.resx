@@ -171,28 +171,79 @@
   <data name="CategoryHasProducts" xml:space="preserve">
     <value>Danh mục này đang có sản phẩm, không xóa được đâu nè</value>
   </data>
-  <data name="UsernameRequired" xml:space="preserve">
-    <value>Tên đăng nhập không được để trống.</value>
+  <data name="DuplicateCategoryCode" xml:space="preserve">
+    <value>Mã danh mục đã tồn tại trong hệ thống.</value>
   </data>
-  <data name="PasswordRequired" xml:space="preserve">
-    <value>Mật khẩu không được để trống.</value>
+  <data name="InvalidCreatedDate" xml:space="preserve">
+    <value>Ngày tạo phải là ngày hôm nay. Không được nhập ngày trong quá khứ hoặc tương lai.</value>
   </data>
-  <data name="DuplicateUsername" xml:space="preserve">
-    <value>Tên đăng nhập đã tồn tại trong hệ thống.</value>
+  <data name="InsertCategorySuccess" xml:space="preserve">
+    <value>Thêm danh mục thành công!</value>
   </data>
-  <data name="DuplicateEmail" xml:space="preserve">
-    <value>Email này đã được sử dụng bởi tài khoản khác.</value>
-  </data>
-  <data name="RegisterSuccess" xml:space="preserve">
-    <value>Đăng ký tài khoản thành công!</value>
-  </data>
-  <data name="InvalidCredentials" xml:space="preserve">
-    <value>Tên đăng nhập hoặc mật khẩu không chính xác.</value>
-  </data>
-  <data name="AccountLocked" xml:space="preserve">
-    <value>Tài khoản của bạn đã bị khóa hoặc không hoạt động.</value>
+  <data name="UpdateCategorySuccess" xml:space="preserve">
+    <value>Cập nhật danh mục thành công!</value>
   </data>
   <data name="ERROR_UNKNOWN_DATABASE" xml:space="preserve">
     <value>Lỗi không xác định từ Database.</value>
+  </data>
+  <data name="Search_null" xml:space="preserve">
+    <value>Chưa nhập từ khóa á</value>
+  </data>
+  <data name="InvalidCategoryId" xml:space="preserve">
+    <value>Id danh mục không hợp lệ.</value>
+  </data>
+  <data name="ProductNameRequired" xml:space="preserve">
+    <value>Tên sản phẩm không được để trống.</value>
+  </data>
+  <data name="InvalidPrice" xml:space="preserve">
+    <value>Giá sản phẩm phải lớn hơn 0.</value>
+  </data>
+  <data name="ProductCodeRequired" xml:space="preserve">
+    <value>Mã sản phẩm không được để trống.</value>
+  </data>
+  <data name="CategoryNotFoundOrDeleted" xml:space="preserve">
+    <value>Danh mục không tồn tại hoặc đã bị xóa.</value>
+  </data>
+  <data name="InsertProductSuccess" xml:space="preserve">
+    <value>Thêm sản phẩm thành công!</value>
+  </data>
+  <data name="UpdateProductSuccess" xml:space="preserve">
+    <value>Cập nhật sản phẩm thành công!</value>
+  </data>
+  <data name="DeleteProductSuccess" xml:space="preserve">
+    <value>Xóa sản phẩm thành công!</value>
+  </data>
+  <data name="UsernameRequired" xml:space="preserve">
+    <value>Tên đăng nhập không được để trống</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Mật khẩu không được để trống</value>
+  </data>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>Địa chỉ email không hợp lệ</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Tên đăng nhập hoặc mật khẩu không đúng</value>
+  </data>
+  <data name="AccountLocked" xml:space="preserve">
+    <value>Tài khoản của bạn đã bị khóa</value>
+  </data>
+  <data name="InvalidCategory" xml:space="preserve">
+    <value>Danh mục không hợp lệ</value>
+  </data>
+  <data name="DeleteCategorySuccess" xml:space="preserve">
+    <value>Xóa danh mục thành công!</value>
+  </data>
+  <data name="DuplicateUsername" xml:space="preserve">
+    <value>Tên đăng nhập đã tồn tại</value>
+  </data>
+  <data name="DuplicateEmail" xml:space="preserve">
+    <value>Email đã tồn tại</value>
+  </data>
+  <data name="RegisterSuccess" xml:space="preserve">
+    <value>Đăng ký người dùng thành công</value>
+  </data>
+  <data name="expertoken" xml:space="preserve">
+    <value>Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại</value>
   </data>
 </root>

@@ -16,7 +16,14 @@ namespace MyApp.Api.Controllers
             _categoryService = categoryService;
         }
 
-        [HttpGet("/Rotev2/Get/Category")]
+        [HttpGet("/Rotev2/Get/SearchCategories")]
+        public async Task<IActionResult> SearchCategories([FromQuery] string? name)
+        { 
+                var data = await _categoryService.SearchCategoryByName(name);
+                return Ok(data);
+        }
+
+        [HttpGet("/Rotev2/Get/AllCategory")]
         public async Task<IActionResult> Get()
         {
             var data = await _categoryService.GetAllCategories();
@@ -33,8 +40,8 @@ namespace MyApp.Api.Controllers
             }
             catch (System.Exception ex)
             {
-                
-                return NotFound(new { message = ex.Message });
+
+                return NotFound(new { Success = 1, message = ex.Message });
             }
         }
 
@@ -45,12 +52,12 @@ namespace MyApp.Api.Controllers
 
             if (result.Success)
             {
-                return Ok(new { message = result.Message });
+                return Ok(new { Success = 1, message = result.Message });
             }
             else
             {
                
-                return BadRequest(new { message = result.Message });
+                return BadRequest(new { Success = 0, message = result.Message });
             }
         }
 
@@ -61,11 +68,11 @@ namespace MyApp.Api.Controllers
 
             if (result.Success)
             {
-                return Ok(new { message = result.Message });
+                return Ok(new { Success = 1, message = result.Message });
             }
             else
             {
-                return BadRequest(new { message = result.Message });
+                return BadRequest(new { Success = 0, message = result.Message });
             }
         }
 
@@ -76,11 +83,11 @@ namespace MyApp.Api.Controllers
 
             if (result.Success)
             {
-                return Ok(new { message = result.Message });
+                return Ok(new { Success = 1, message = result.Message });
             }
             else
             {
-                return NotFound(new { message = result.Message });
+                return NotFound(new { Success = 0, message = result.Message });
             }
         }
     }

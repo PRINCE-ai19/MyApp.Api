@@ -11,15 +11,16 @@
         public static class DapperHelper
         {
 
-            public static async Task<DynamicParameters> MapParametersAsync<T>(IDbConnection connection, string spName, T obj)
+            public static async Task<DynamicParameters> MapParametersAsync(IDbConnection connection, string spName, object? obj)
             {
                 var spParams = await GetSpParametersAsync(connection, spName);
                 var dynamicParams = new DynamicParameters();
 
-     
-                var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                if (obj == null) return dynamicParams;
 
-                foreach (var paramName in spParams)
+                var properties = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (var paramName in spParams)
                 {
                     var cleanParamName = paramName.StartsWith("@") ? paramName.Substring(1) : paramName;
 

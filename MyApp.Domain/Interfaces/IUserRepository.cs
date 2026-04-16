@@ -15,5 +15,8 @@ namespace MyApp.Domain.Interfaces
             Task<bool> UpdateUserRefreshTokenAsync(User user);
 
             Task<SpResponse> RegisterAsync(User user);
+
+           Task<User?> GetUserByRefreshTokenAsync(string refreshToken);
+
     }
 }

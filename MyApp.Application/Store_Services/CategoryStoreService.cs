@@ -22,6 +22,12 @@ namespace MyApp.Application.Store_Services
             _mapper = mapper;
         }
 
+        public async Task<IEnumerable<Category_DTO>> SearchCategoryByName(string? name)
+        {
+            var entities = await _repo.SearchCategory(name);
+            return _mapper.Map<IEnumerable<Category_DTO>>(entities);
+        }
+
         public async Task<IEnumerable<Category_DTO>> GetAllCategories()
         {
             var entities = await _repo.GetAllCategoriesAsync();
@@ -44,9 +50,9 @@ namespace MyApp.Application.Store_Services
         {
             var existingCategory = await _repo.GetByIdAsync(id);
 
-           var update = _mapper.Map(dto, existingCategory);
+            _mapper.Map(dto, existingCategory);
 
-            return await _repo.UpdateAsync(update);
+            return await _repo.UpdateAsync(existingCategory);
         }
 
         public async Task<SpResponse> Delete(int id)
