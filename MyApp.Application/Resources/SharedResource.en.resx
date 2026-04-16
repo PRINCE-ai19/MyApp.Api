@@ -186,4 +186,31 @@
   <data name="ERROR_UNKNOWN_DATABASE" xml:space="preserve">
     <value>Unknown database error.</value>
   </data>
+  <data name="Search_null" xml:space="preserve">
+    <value>Have not entered keyword yet</value>
+  </data>
+  <data name="InvalidCategoryId" xml:space="preserve">
+    <value>Invalid category Id.</value>
+  </data>
+  <data name="ProductNameRequired" xml:space="preserve">
+    <value>Product name is required.</value>
+  </data>
+  <data name="InvalidPrice" xml:space="preserve">
+    <value>Price must be greater than 0.</value>
+  </data>
+  <data name="ProductCodeRequired" xml:space="preserve">
+    <value>Product code is required.</value>
+  </data>
+  <data name="CategoryNotFoundOrDeleted" xml:space="preserve">
+    <value>Category not found or has been deleted.</value>
+  </data>
+  <data name="InsertProductSuccess" xml:space="preserve">
+    <value>Product added successfully!</value>
+  </data>
+  <data name="UpdateProductSuccess" xml:space="preserve">
+    <value>Product updated successfully!</value>
+  </data>
+  <data name="DeleteProductSuccess" xml:space="preserve">
+    <value>Product deleted successfully!</value>
+  </data>
 </root>

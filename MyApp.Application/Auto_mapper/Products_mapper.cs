@@ -15,26 +15,21 @@ namespace MyApp.Application.Auto_mapper
     {
         public Products_mapper()
         {
+        
             CreateMap<Product_DTO, Product>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore()) 
                 .ForMember(dest => dest.RecordStatus, opt => opt.MapFrom(src => "1"))
-                .ForMember(
-                    d => d.CreatedAt,
-                    o => o.MapFrom(src =>
-                        string.IsNullOrWhiteSpace(src.CreatedAt)
-                            ? (DateTime?)null
-                            : DateTime.ParseExact(src.CreatedAt, "dd/MM/yyyy", new CultureInfo("vi-VN"))
-                    )
-                )
-                .ReverseMap()
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => 
+                    string.IsNullOrWhiteSpace(src.CreatedAt) 
+                        ? (DateTime?)null 
+                        : DateTime.ParseExact(src.CreatedAt, "dd/MM/yyyy", new CultureInfo("vi-VN"))));
 
-                .ForMember(
-                    d => d.CreatedAt,
-                    o => o.MapFrom(src =>
-                        src.CreatedAt.HasValue
-                            ? src.CreatedAt.Value.ToString("dd/MM/yyyy")
-                            : null
-                    )
-                );
+    
+            CreateMap<Product, Product_DTO>()
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => 
+                    src.CreatedAt.HasValue 
+                        ? src.CreatedAt.Value.ToString("dd/MM/yyyy") 
+                        : null));
 
             CreateMap<ProductUpdateDto, Product>().ReverseMap();
             CreateMap<CategoryUpdateDto, Category>()

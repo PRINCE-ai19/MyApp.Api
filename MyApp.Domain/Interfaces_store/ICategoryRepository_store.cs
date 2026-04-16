@@ -16,5 +16,7 @@ namespace MyApp.Domain.Interfaces_store
         Task<SpResponse> AddAsync(Category category);
 
         Task<SpResponse> DeleteAsync(int id);
+
+        Task<IEnumerable<Category>> SearchCategory(string name);
     }
 }

@@ -383,3 +383,466 @@ parameters.Add("@Code", dto.Code);
 
 > [!IMPORTANT]
 > **Quy tắc vàng duy nhất**: Đảm bảo **Tên property trong C# class** giống hệt **Tên tham số trong SQL** (bỏ dấu `@`). Chỉ cần tuân thủ điều này, DapperHelper sẽ lo phần còn lại.
+
+
+## giải thích hàm hepler cho Intern
+# 📘 Giải thích chi tiết StoreHelper - Dành cho Intern
+
+> Tài liệu này giải thích từng dòng code trong hệ thống **StoreHelper** mà anh vừa xây dựng.
+> Mục tiêu: Giúp em hiểu **tại sao** viết như vậy, chứ không chỉ **viết gì**.
+
+---
+
+## 🗺️ Tổng quan luồng hoạt động (Flow)
+
+Khi một API được gọi, luồng xử lý sẽ đi như sau:
+
+```
+Controller → Service → Repository → StoreHelper → DapperHelper → Database (Stored Procedure)
+```
+
+**Ví dụ cụ thể:** Khi người dùng gọi API `POST /api/categorystore` để thêm Category mới:
+
+```
+1. CategoryStoreController nhận request
+2. CategoryStoreService xử lý business logic
+3. CategoryRepository_store.AddAsync(category) được gọi
+4. _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_InsertCategory", category)
+5. StoreHelper lấy connection từ AppDbContext
+6. DapperHelper.MapParametersAsync() tự động ánh xạ thuộc tính của category → tham số của SP
+7. Dapper thực thi SP trên SQL Server
+8. Kết quả SpResponse trả ngược lại về Controller → trả cho người dùng
+```
+
+---
+
+## 📁 FILE 1: IStoreHelper.cs (Interface - Bản thiết kế)
+
+**Đường dẫn:** `MyApp.Domain/Interfaces_store/IStoreHelper.cs`
+
+**Vai trò:** Đây là "bản hợp đồng" (contract). Nó chỉ khai báo "tôi có thể làm gì" mà KHÔNG nói "tôi làm như thế nào". Đây là nguyên tắc cốt lõi của **Clean Architecture** — tầng Domain không biết gì về Database, Dapper, hay SQL Server cả.
+
+```csharp
+using System.Collections.Generic;   // Để dùng IEnumerable<T> (danh sách)
+using System.Threading.Tasks;       // Để dùng Task (bất đồng bộ - async)
+
+namespace MyApp.Domain.Interfaces_store
+{
+    public interface IStoreHelper
+    {
+```
+
+### Phương thức 1: `QueryAsync<T>`
+```csharp
+        Task<IEnumerable<T>> QueryAsync<T>(string spName, object? parameters = null);
+```
+- **`Task<...>`**: Đánh dấu đây là hàm bất đồng bộ (async). Nghĩa là nó sẽ không "đứng chờ" database trả kết quả mà để thread khác làm việc khác trong lúc chờ.
+- **`IEnumerable<T>`**: Trả về một danh sách. `T` là kiểu generic — có thể là `Category`, `Product`, hay bất kỳ class nào.
+- **`string spName`**: Tên Stored Procedure cần gọi, ví dụ `"sp_GetAllCategories"`.
+- **`object? parameters = null`**: Tham số truyền vào SP. Dấu `?` nghĩa là cho phép `null`. `= null` nghĩa là nếu không truyền gì thì mặc định là `null` (tức là SP không cần tham số, ví dụ `sp_GetAllCategories` không cần truyền gì cả).
+- **Khi nào dùng?** Khi em cần lấy **nhiều dòng** dữ liệu (ví dụ: danh sách tất cả Category).
+
+### Phương thức 2: `QueryFirstOrDefaultAsync<T>`
+```csharp
+        Task<T?> QueryFirstOrDefaultAsync<T>(string spName, object? parameters = null);
+```
+- **`T?`**: Trả về **1 object duy nhất**, hoặc `null` nếu không tìm thấy.
+- **Khi nào dùng?** Khi em cần lấy **1 dòng** dữ liệu (ví dụ: lấy Category theo Id, hoặc nhận kết quả SpResponse từ Insert/Update/Delete).
+
+### Phương thức 3: `ExecuteAsync`
+```csharp
+        Task<int> ExecuteAsync(string spName, object? parameters = null);
+```
+- **`int`**: Trả về số dòng bị ảnh hưởng (affected rows).
+- **Khi nào dùng?** Khi em chỉ cần thực thi SP mà không cần nhận kết quả chi tiết (ví dụ: xóa dữ liệu đơn giản).
+
+```csharp
+    }
+}
+```
+
+---
+
+## 📁 FILE 2: DapperHelper.cs (Bộ não ánh xạ tham số)
+
+**Đường dẫn:** `MyApp.Infrastructure/Helpers/DapperHelper.cs`
+
+**Vai trò:** Đây là "phép thuật" cốt lõi. Nó tự động đọc tên các tham số của Stored Procedure từ database, rồi so khớp với thuộc tính của object C# mà em truyền vào. Em không cần phải viết tay từng tham số nữa.
+
+```csharp
+    using Dapper;                       // Thư viện ORM siêu nhẹ để gọi SQL
+    using System.Collections.Concurrent; // (Chưa dùng, có thể dùng cho cache sau này)
+    using System.Collections.Generic;    // Để dùng List<T>
+    using System.Data;                   // Để dùng IDbConnection
+    using System.Linq;                   // Để dùng FirstOrDefault, ToList
+    using System.Reflection;             // ⭐ Quan trọng: Để dùng Reflection (đọc thuộc tính của object lúc runtime)
+    using System.Threading.Tasks;        // Để dùng Task (async)
+
+    namespace MyApp.Infrastructure.Helpers
+    {
+        public static class DapperHelper  // "static" = không cần tạo instance, gọi thẳng DapperHelper.MapParametersAsync(...)
+        {
+```
+
+### Hàm chính: `MapParametersAsync`
+```csharp
+            public static async Task<DynamicParameters> MapParametersAsync(
+                IDbConnection connection,   // Kết nối database
+                string spName,              // Tên Stored Procedure
+                object? obj                 // Object chứa dữ liệu (Entity hoặc Anonymous object)
+            )
+            {
+```
+
+**Bước 1:** Lấy danh sách tham số của SP từ database
+```csharp
+                var spParams = await GetSpParametersAsync(connection, spName);
+                // Ví dụ: sp_InsertCategory có tham số [@Name, @Description]
+                // → spParams = ["@Name", "@Description"]
+```
+
+**Bước 2:** Tạo đối tượng DynamicParameters (là "túi chứa" tham số của Dapper)
+```csharp
+                var dynamicParams = new DynamicParameters();
+```
+
+**Bước 3:** Kiểm tra null — nếu không truyền object nào thì trả về túi rỗng
+```csharp
+                if (obj == null) return dynamicParams;
+                // Ví dụ: sp_GetAllCategories không cần tham số → obj = null → trả về rỗng
+```
+
+**Bước 4:** Dùng **Reflection** để đọc danh sách thuộc tính (properties) của object
+```csharp
+                var properties = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                // obj.GetType() → lấy kiểu thực tế lúc runtime (ví dụ: Category)
+                // GetProperties(...) → lấy tất cả thuộc tính public, không phải static
+                // Ví dụ: Category có [Id, Name, Description] → properties = [Id, Name, Description]
+```
+
+> **💡 Tại sao dùng `obj.GetType()` mà không dùng `typeof(T)`?**
+> Vì khi em truyền `new { Id = 1 }` (anonymous object), nếu dùng `typeof(T)` mà `T` là `object`,
+> thì Reflection sẽ đọc thuộc tính của class `Object` (rỗng!) — sai hoàn toàn.
+> `obj.GetType()` sẽ lấy đúng kiểu thực tế lúc chạy → đọc đúng thuộc tính.
+
+**Bước 5:** Vòng lặp — so khớp từng tham số SP với thuộc tính của object
+```csharp
+                foreach (var paramName in spParams)     // Duyệt qua từng tham số SP
+                {
+                    // Tham số SP trong SQL có dạng "@Name", cần bỏ @ để so sánh
+                    var cleanParamName = paramName.StartsWith("@") ? paramName.Substring(1) : paramName;
+                    // "@Name" → "Name"
+
+                    // Tìm thuộc tính C# có tên khớp (không phân biệt hoa/thường)
+                    var prop = properties.FirstOrDefault(
+                        p => p.Name.Equals(cleanParamName, System.StringComparison.OrdinalIgnoreCase)
+                    );
+                    // So sánh "Name" (SP) với "Name" (C# property) → KHỚP!
+                    // OrdinalIgnoreCase = không phân biệt "name" vs "Name" vs "NAME"
+
+                    if (prop != null)   // Nếu tìm thấy thuộc tính khớp
+                    {
+                        dynamicParams.Add(paramName, prop.GetValue(obj));
+                        // prop.GetValue(obj) → lấy giá trị thực tế từ object
+                        // Ví dụ: category.Name = "Điện thoại" → Add("@Name", "Điện thoại")
+                    }
+                    // Nếu SP có tham số mà object không có thuộc tính tương ứng → BỎ QUA (không lỗi)
+                }
+
+                return dynamicParams;
+                // Trả về túi tham số đã được map xong → sẵn sàng để Dapper thực thi
+            }
+```
+
+### Hàm phụ: `GetSpParametersAsync`
+```csharp
+            private static async Task<List<string>> GetSpParametersAsync(
+                IDbConnection connection,
+                string spName
+            )
+            {
+                // Truy vấn bảng hệ thống sys.parameters của SQL Server
+                // Bảng này chứa metadata của TẤT CẢ tham số của tất cả SP trong database
+                const string sql = @"
+                    SELECT name 
+                    FROM sys.parameters 
+                    WHERE object_id = OBJECT_ID(@spName)";
+                // OBJECT_ID(@spName) → chuyển tên SP thành ID nội bộ của SQL Server
+                // Ví dụ: OBJECT_ID('sp_InsertCategory') → 123456789
+
+                var parameters = await connection.QueryAsync<string>(sql, new { spName });
+                // Dapper thực thi câu SQL trên, truyền @spName vào
+                // Kết quả: ["@Name", "@Description"]
+
+                var paramList = parameters.ToList();
+                return paramList;
+            }
+```
+
+> **💡 Ý nghĩa thực tế:** Thay vì dev phải tự viết `new { Name = category.Name, Description = category.Description }`,
+> DapperHelper tự động làm việc này bằng cách đọc metadata từ SQL Server + Reflection từ C#.
+> → Khi SP thay đổi tham số, code C# **không cần sửa gì cả** (miễn là Entity có thuộc tính tương ứng).
+
+---
+
+## 📁 FILE 3: StoreHelper.cs (Lớp triển khai - "Người thợ thực sự")
+
+**Đường dẫn:** `MyApp.Infrastructure/Helpers/StoreHelper.cs`
+
+**Vai trò:** Đây là lớp thực hiện interface `IStoreHelper`. Nó đóng gói 3 việc:
+1. Lấy kết nối database từ `AppDbContext`
+2. Gọi `DapperHelper` để map tham số tự động
+3. Dùng Dapper để thực thi Stored Procedure
+
+```csharp
+using Dapper;                           // Dapper ORM
+using Microsoft.EntityFrameworkCore;     // Để dùng .Database.GetDbConnection()
+using MyApp.Domain.Interfaces_store;     // Interface IStoreHelper
+using MyApp.Infrastructure.Data.Context; // AppDbContext (EF Core context)
+using System.Collections.Generic;
+using System.Data;                       // CommandType.StoredProcedure
+using System.Threading.Tasks;
+
+namespace MyApp.Infrastructure.Helpers
+{
+    public class StoreHelper : IStoreHelper    // Triển khai interface IStoreHelper
+    {
+        private readonly AppDbContext _context;
+        // "readonly" = chỉ gán giá trị 1 lần trong constructor, không ai sửa được sau đó
+        // → Đảm bảo an toàn, tránh bug do vô tình thay đổi
+
+        public StoreHelper(AppDbContext context)    // Constructor Injection (DI)
+        {
+            _context = context;
+            // .NET DI container sẽ TỰ ĐỘNG truyền AppDbContext vào đây khi tạo StoreHelper
+        }
+```
+
+### Phương thức 1: `QueryAsync<T>` — Lấy danh sách
+```csharp
+        public async Task<IEnumerable<T>> QueryAsync<T>(string spName, object? parameters = null)
+        {
+            // Bước 1: Lấy kết nối database từ EF Core context
+            var connection = _context.Database.GetDbConnection();
+            // EF Core quản lý connection pool, nên ta không cần tự mở/đóng connection
+            // GetDbConnection() trả về IDbConnection đã được quản lý
+
+            // Bước 2: Gọi DapperHelper để tự động map tham số
+            var dParams = await DapperHelper.MapParametersAsync(connection, spName, parameters);
+            // Nếu parameters = null (ví dụ: sp_GetAll) → dParams = rỗng
+            // Nếu parameters = category entity → dParams = {@Name: "abc", @Description: "xyz"}
+
+            // Bước 3: Thực thi SP bằng Dapper và trả về danh sách kết quả
+            return await connection.QueryAsync<T>(
+                spName,                                // Tên SP: "sp_GetAllCategories"
+                dParams,                               // Tham số đã được map
+                commandType: CommandType.StoredProcedure // Nói cho Dapper biết đây là SP, không phải raw SQL
+            );
+            // Dapper tự động map kết quả trả về từ SP vào các object kiểu T
+            // Ví dụ: mỗi dòng trong result set → 1 object Category
+        }
+```
+
+### Phương thức 2: `QueryFirstOrDefaultAsync<T>` — Lấy 1 dòng
+```csharp
+        public async Task<T?> QueryFirstOrDefaultAsync<T>(string spName, object? parameters = null)
+        {
+            var connection = _context.Database.GetDbConnection();
+            var dParams = await DapperHelper.MapParametersAsync(connection, spName, parameters);
+            return await connection.QueryFirstOrDefaultAsync<T>(
+                spName,
+                dParams,
+                commandType: CommandType.StoredProcedure
+            );
+            // QueryFirstOrDefaultAsync:
+            //   - Nếu SP trả về ít nhất 1 dòng → lấy dòng ĐẦU TIÊN, map vào object T
+            //   - Nếu SP trả về 0 dòng → trả về null (default)
+            // → Rất phù hợp cho: GetById, Insert (trả SpResponse), Update, Delete
+        }
+```
+
+### Phương thức 3: `ExecuteAsync` — Thực thi không cần kết quả chi tiết
+```csharp
+        public async Task<int> ExecuteAsync(string spName, object? parameters = null)
+        {
+            var connection = _context.Database.GetDbConnection();
+            var dParams = await DapperHelper.MapParametersAsync(connection, spName, parameters);
+            return await connection.ExecuteAsync(
+                spName,
+                dParams,
+                commandType: CommandType.StoredProcedure
+            );
+            // ExecuteAsync: Trả về số dòng bị ảnh hưởng (affected rows)
+            // Ví dụ: DELETE 3 dòng → trả về 3
+            // Dùng khi em không cần đọc dữ liệu trả về, chỉ cần biết thành công hay không
+        }
+    }
+}
+```
+
+---
+
+## 📁 FILE 4: CategoryRepository_store.cs (Repository đã được refactor)
+
+**Đường dẫn:** `MyApp.Infrastructure/Repositories_Store/CategoryRepository_store.cs`
+
+**Vai trò:** Đây là nơi thực sự gọi các SP. Nhờ có `StoreHelper`, code ở đây cực kỳ gọn gàng.
+
+```csharp
+using Microsoft.Extensions.Localization;    // Đa ngôn ngữ (i18n)
+using MyApp.Application.Resources;          // SharedResource (file .resx)
+using MyApp.Domain.Common;                  // SpResponse
+using MyApp.Domain.Entities;                // Category entity
+using MyApp.Domain.Interfaces_store;        // ICategoryRepository_store, IStoreHelper
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace MyApp.Infrastructure.Repositories_Store
+{
+    public class CategoryRepository_store : ICategoryRepository_store 
+    {
+        private readonly IStoreHelper _storeHelper;                     // ⭐ Helper mới
+        private readonly IStringLocalizer<SharedResource> _localizer;   // Đa ngôn ngữ
+
+        // Constructor: .NET DI container tự động truyền 2 dependency vào
+        public CategoryRepository_store(IStoreHelper storeHelper, IStringLocalizer<SharedResource> localizer)
+        {
+            _storeHelper = storeHelper;
+            _localizer = localizer;
+        }
+```
+
+### GetAll — Không cần tham số
+```csharp
+        public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
+        {
+            return await _storeHelper.QueryAsync<Category>("sp_GetAllCategories");
+            // Chỉ 1 DÒNG! Không truyền parameters → mặc định null
+            // StoreHelper sẽ tự: lấy connection → map params (rỗng) → gọi SP → trả danh sách Category
+        }
+```
+
+### GetById — Truyền Anonymous Object
+```csharp
+        public async Task<Category?> GetByIdAsync(int id)
+        {
+            return await _storeHelper.QueryFirstOrDefaultAsync<Category>(
+                "sp_GetCategoryById", 
+                new { Id = id }         // ← Anonymous object: tạo object nhanh có thuộc tính Id
+            );
+            // new { Id = id } tạo ra 1 object có 1 thuộc tính "Id"
+            // DapperHelper sẽ so khớp "Id" (C#) với "@Id" (SP) → map giá trị vào
+        }
+```
+
+### Add — Truyền Entity trực tiếp
+```csharp
+        public async Task<SpResponse> AddAsync(Category category)
+        {
+            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>(
+                "sp_InsertCategory", 
+                category                // ← Truyền thẳng entity Category!
+            );
+            // DapperHelper sẽ đọc tất cả thuộc tính của Category (Id, Name, Description)
+            // So khớp với tham số SP (@Name, @Description) → map tự động
+            // SP trả về SpResponse {Success: true/false, Message: "..."}
+
+            // Xử lý đa ngôn ngữ cho message trả về
+            if (response != null && !string.IsNullOrEmpty(response.Message))
+            {
+                response.Message = _localizer[response.Message];
+                // SP trả về key như "CATEGORY_CREATED_SUCCESS"
+                // _localizer chuyển thành "Tạo danh mục thành công" (vi) hoặc "Category created" (en)
+            }
+
+            // Nếu response null (lỗi không mong đợi) → trả về lỗi mặc định
+            return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
+            // ?? = null-coalescing operator: nếu vế trái null → dùng vế phải
+        }
+```
+
+### Update & Delete — Tương tự Add
+```csharp
+        public async Task<SpResponse> UpdateAsync(Category category)
+        {
+            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_UpdateCategory", category);
+            // Giống AddAsync, nhưng gọi sp_UpdateCategory
+            // ...xử lý localize và null check giống nhau...
+        }
+
+        public async Task<SpResponse> DeleteAsync(int id)
+        {
+            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>(
+                "sp_DeleteCategory", 
+                new { Id = id }     // Chỉ cần truyền Id
+            );
+            // ...xử lý localize và null check giống nhau...
+        }
+```
+
+---
+
+## 📁 FILE 5: Program.cs (Đăng ký Dependency Injection)
+
+**Dòng quan trọng:**
+```csharp
+builder.Services.AddScoped<IStoreHelper, StoreHelper>();
+```
+
+**Giải thích:**
+- `AddScoped` = Mỗi HTTP request tạo **1 instance** của `StoreHelper`, dùng chung trong suốt request đó, rồi tự hủy khi request kết thúc.
+- `<IStoreHelper, StoreHelper>` = "Khi ai đó yêu cầu `IStoreHelper`, hãy tạo và trả về `StoreHelper`".
+- Nhờ dòng này, khi `CategoryRepository_store` khai báo `IStoreHelper storeHelper` trong constructor, .NET DI container sẽ **tự động** tạo `StoreHelper` và truyền vào.
+
+**Tại sao dùng `AddScoped` mà không phải `AddSingleton` hay `AddTransient`?**
+- `AddSingleton`: 1 instance dùng cho toàn bộ app → **NGUY HIỂM** vì `AppDbContext` là `Scoped`, không thể inject `Scoped` vào `Singleton`.
+- `AddTransient`: Tạo instance mới mỗi lần inject → lãng phí tài nguyên.
+- `AddScoped`: 1 instance/request → **VỪA ĐỦ**, cùng lifecycle với `AppDbContext`.
+
+---
+
+## 🔑 Tóm tắt: Trước và Sau khi có StoreHelper
+
+### ❌ TRƯỚC (Code cũ trong Repository):
+```csharp
+public async Task<SpResponse> AddAsync(Category category)
+{
+    var connection = _context.Database.GetDbConnection();                          // Dòng 1
+    var parameters = await DapperHelper.MapParametersAsync(connection, "sp_InsertCategory", category);  // Dòng 2
+    var response = await connection.QueryFirstOrDefaultAsync<SpResponse>(          // Dòng 3
+        "sp_InsertCategory",                                                       // Dòng 4
+        parameters,                                                                // Dòng 5
+        commandType: CommandType.StoredProcedure                                   // Dòng 6
+    );
+    // ... xử lý localize ...
+}
+// → 6 dòng logic database, copy-paste ở MỌI phương thức
+```
+
+### ✅ SAU (Code mới với StoreHelper):
+```csharp
+public async Task<SpResponse> AddAsync(Category category)
+{
+    var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_InsertCategory", category);  // 1 DÒNG!
+    // ... xử lý localize ...
+}
+// → 1 dòng, sạch sẽ, dễ đọc, dễ bảo trì
+```
+
+---
+
+## 💡 Nguyên tắc thiết kế đã áp dụng
+
+| Nguyên tắc | Giải thích |
+|:---|:---|
+| **DRY** (Don't Repeat Yourself) | Logic lấy connection + map params + gọi Dapper chỉ viết **1 lần** trong StoreHelper |
+| **SRP** (Single Responsibility) | Mỗi class chỉ làm 1 việc: DapperHelper → map params, StoreHelper → thực thi SP, Repository → logic nghiệp vụ |
+| **DIP** (Dependency Inversion) | Repository phụ thuộc vào `IStoreHelper` (abstraction), không phụ thuộc vào `StoreHelper` (implementation) |
+| **Open/Closed** | Muốn thêm tính năng (logging, caching) → sửa `StoreHelper`, **không cần sửa** bất kỳ Repository nào |
+
+---
+
+> **📌 Lời khuyên cho em:** Khi tạo Repository mới (ví dụ: `ProductRepository_store`), em chỉ cần:
+> 1. Inject `IStoreHelper` vào constructor
+> 2. Gọi `_storeHelper.QueryAsync<T>("tên_sp")` hoặc `_storeHelper.QueryFirstOrDefaultAsync<T>("tên_sp", object)`
+> 3. Xong! Không cần lo quản lý connection hay map tham số nữa 🎉

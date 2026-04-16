@@ -22,6 +22,12 @@ namespace MyApp.Application.Store_Services
             _mapper = mapper;
         }
 
+        public async Task<IEnumerable<Category_DTO>> SearchCategoryByName(string? name)
+        {
+            var entities = await _repo.SearchCategory(name);
+            return _mapper.Map<IEnumerable<Category_DTO>>(entities);
+        }
+
         public async Task<IEnumerable<Category_DTO>> GetAllCategories()
         {
             var entities = await _repo.GetAllCategoriesAsync();
@@ -43,10 +49,6 @@ namespace MyApp.Application.Store_Services
         public async Task<SpResponse> Update(int id, Category_DTO dto)
         {
             var existingCategory = await _repo.GetByIdAsync(id);
-            if (existingCategory == null)
-            {
-                return new SpResponse { Success = false, Message = "Không tìm thấy danh mục." };
-            }
 
             _mapper.Map(dto, existingCategory);
 
