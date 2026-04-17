@@ -68,7 +68,7 @@ namespace MyApp.Api
                     };
                 });
 
-            // Bật SelfLog để xem lỗi nội bộ của Serilog (ví dụ: lỗi SQL Sink)
+           
             Serilog.Debugging.SelfLog.Enable(msg => 
             {
                 Console.WriteLine(msg);

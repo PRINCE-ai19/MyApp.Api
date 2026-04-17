@@ -45,7 +45,6 @@ namespace MyApp.Api.Controllers
             }
             catch (Exception ex)
             {
-                // Bắt các lỗi RAISERROR từ SQL (như CategoryNotFound) và dịch sang ngôn ngữ hiện tại
                 return BadRequest(new { Success = 0, message = _localizer[ex.Message].Value });
             }
         }

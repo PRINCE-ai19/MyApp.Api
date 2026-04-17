@@ -272,3 +272,80 @@ app.MapControllers();
 - Nếu Thẻ hết hạn, hãy dùng **Giấy xác nhận (Refresh Token)** cầm lên phòng Hành chính để họ đối chiếu sổ sách Database, nếu khớp họ sẽ in cho em cái Thẻ mới!
 
 Là lập trình viên .NET, em chỉ cần học làm quen với thư viện `System.IdentityModel.Tokens.Jwt` (cho JWT), `BCrypt.Net-Next` (cho Hashing) và cách cấu hình Middleware trong `Program.cs` là có thể cứng cáp phần xác thực Authentication này rồi nhé. Code vui nha!
+
+---
+
+## 8. Serilog SelfLog - "Kẻ canh gác cho người gác cổng"
+
+Trong dự án của mình, em sẽ thấy một đoạn code "lạ" ở đầu file `Program.cs` như thế này:
+
+```csharp
+// Bật SelfLog để xem lỗi nội bộ của Serilog (ví dụ: lỗi SQL Sink)
+Serilog.Debugging.SelfLog.Enable(msg => 
+{
+    Console.WriteLine(msg);
+    File.AppendAllText("Logs/selflog.txt", msg + Environment.NewLine);
+});
+```
+
+Với tư cách là Senior, anh sẽ giải thích cho em tại sao một dự án chuyên nghiệp **bắt buộc** phải có đoạn này.
+
+### 8.1. SelfLog là gì?
+Thông thường, chúng ta dùng Serilog để ghi lại lỗi của ứng dụng (ví dụ: lỗi Logic, lỗi DB). Nhưng câu hỏi đặt ra là: **"Nếu chính bản thân Serilog bị lỗi thì ai sẽ ghi lại lỗi đó?"**.
+
+Ví dụ:
+- Em cấu hình Serilog ghi log vào SQL Server (MSSQL Sink), nhưng chuỗi Connection String bị sai.
+- Bảng `AppLogs` trong Database bị đầy hoặc bị xóa mất.
+- Quyền ghi file vào thư mục `Logs/` bị từ chối bởi Windows (Permission denied).
+
+Lúc này, Serilog sẽ "im lặng" thất bại để không làm treo ứng dụng chính của khách hàng (đây là triết lý của Serilog). Kết quả là: App vẫn chạy, nhưng không có một dòng log nào được ghi lại, và em hoàn toàn mù tịt không biết tại sao. **SelfLog** chính là cơ chế để Serilog "tự khai" ra các lỗi nội bộ của chính nó.
+
+### 8.2. Tại sao lại cấu hình như vậy?
+Trong đoạn code trên, anh đã cấu hình SelfLog làm 2 việc:
+1. **`Console.WriteLine(msg)`**: Đẩy lỗi ra màn hình Console ngay lập tức. Giúp em (Developer) thấy ngay lỗi cấu hình khi đang chạy Debug ở máy local.
+2. **`File.AppendAllText("Logs/selflog.txt", ...)`**: Ghi lỗi vào một file text riêng biệt.
+
+**Tại sao phải ghi ra file `selflog.txt` riêng?**
+- Vì nếu Serilog lỗi khi ghi vào SQL Server, nó không thể tự ghi lỗi đó vào SQL Server được nữa.
+- Chúng ta cần một kênh giao tiếp "nguyên thủy" nhất, ít khả năng lỗi nhất là **File Text** để làm bằng chứng cuối cùng khi mọi hệ thống log phức tạp khác đều sụp đổ.
+
+### 8.3. Cách kiểm tra khi có sự cố
+Nếu một ngày đẹp trời em thấy hệ thống log của mình (bảng `AppLogs` trong SQL) không nhận được dữ liệu mới, việc đầu tiên em cần làm không phải là kiểm tra code xử lý nghiệp vụ, mà là mở file **`Logs/selflog.txt`**. 
+
+Mọi "u uất" của Serilog như: *`"Table AppLogs not found"`*, *`"Login failed for user..."`*, hay *`"The network path was not found"`* sẽ nằm cả ở đó.
+
+---
+
+## 9. So sánh ILogger và SelfLog - Em nên dùng cái nào?
+
+Có một câu hỏi rất hay là: **"Nếu đã có `ILogger` (của Microsoft/Serilog) để in lỗi rồi, thì tại sao còn cần `SelfLog`? Dùng `ILogger` có đúng không?"**.
+
+Câu trả lời của Senior là: **Dùng `ILogger` là hoàn toàn ĐÚNG và BẮT BUỘC**, nhưng hai thằng này phục vụ hai mục đích hoàn toàn khác nhau.
+
+### 9.1. Bảng so sánh nhanh
+
+| Đặc điểm | ILogger (Application Logging) | Serilog SelfLog (Internal Logging) |
+| :--- | :--- | :--- |
+| **Đối tượng** | Ghi lại lỗi do **Code của em** viết ra. | Ghi lại lỗi do **Serilog** bị hỏng. |
+| **Ví dụ lỗi** | Chia cho 0, Null Reference, Logic nghiệp vụ sai. | Kết nối SQL bị firewall chặn, Ổ đĩa đầy không ghi được log. |
+| **Vị trí dùng** | Dùng ở khắp các Controller, Service (DI vào). | Chỉ cấu hình 1 lần duy nhất ở `Program.cs`. |
+| **Độ tin cậy** | Phụ thuộc vào việc cấu hình Sink (SQL/File) có chạy không. | Là "tuyến phòng thủ cuối cùng", chạy độc lập. |
+
+### 9.2. Tại sao không dùng ILogger để ghi lỗi của Serilog?
+Em hãy tưởng tượng:
+1. Em dùng `_logger.LogError("Lỗi rồi!")` trong một hàm xử lý.
+2. `ILogger` sẽ chuyển thông tin này cho Serilog.
+3. Serilog cố gắng ghi cái lỗi này vào SQL Server.
+4. Nhưng xui xẻo thay, SQL Server đang bị bảo trì (Sụp).
+5. Serilog không thể ghi log được => Nó phát sinh một lỗi nội bộ.
+
+Nếu lúc này Serilog lại dùng chính `ILogger` để báo lỗi "Tôi không ghi được vào SQL", thì cái thông báo đó lại tiếp tục cố gắng ghi vào SQL... => Kết quả là tạo ra một **vòng lặp vô tận** hoặc làm treo ứng dụng.
+
+Vì vậy, `SelfLog` ra đời để ghi lỗi ra một nơi khác (Console hoặc File Text đơn giản) mà **không đi qua các bộ lọc hay Sink phức tạp** của Serilog chính.
+
+### 9.3. Lời khuyên cho em
+- **Dùng `ILogger<T>`**: Để ghi lại tất cả các hoạt động nghiệp vụ, lỗi logic của App. Đây là cái em sẽ dùng 99% thời gian.
+- **Dùng `SelfLog`**: Để cấu hình âm thầm ở đó. Em không bao giờ gọi nó trong Service. Nó sẽ tự động "nhảy" vào cuộc khi hệ thống log chính của em có vấn đề.
+
+**Kết luận:** Em dùng `ILogger` để in lỗi là cực kỳ chuẩn xác và đúng chuẩn Clean Architecture. `SelfLog` chỉ là cái "bảo hiểm" đi kèm để đảm bảo khi hệ thống log hỏng, em vẫn biết lý do tại sao thôi!
+
