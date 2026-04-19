@@ -7,19 +7,21 @@ public partial class User
 {
     public int Id { get; set; }
 
-    public string Username { get; set; } = null!;
+    public string Name { get; set; } = null!;
 
-    public string PasswordHass { get; set; } = null!;
+    public string Email { get; set; } = null!;
 
-    public string? FullName { get; set; }
+    public string PasswordHash { get; set; } = null!;
 
-    public string? Email { get; set; }
+    public string? Code { get; set; }
 
-    public string? Role { get; set; }
-
-    public string? RefreshToken { get; set; }
-
-    public DateTime? RefreshTokenExpiryTime { get; set; }
+    public DateTime? CreatedAt { get; set; }
 
     public string? RecordStatus { get; set; }
+
+    public virtual ICollection<UserPermission> UserPermissions { get; set; } = new List<UserPermission>();
+
+    public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+
+    public virtual ICollection<UsersToken> UsersTokens { get; set; } = new List<UsersToken>();
 }

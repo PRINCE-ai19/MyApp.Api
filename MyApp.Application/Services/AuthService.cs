@@ -1,4 +1,4 @@
-using AutoMapper;
+/*using AutoMapper;
 using BCrypt.Net;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -67,7 +67,7 @@ namespace MyApp.Application.Services
 
         public async Task<SpResponse> RegisterAsync(RegisterRequest request)
         {
-            /*var user = new User
+            *//*var user = new User
             {
                 Username = request.Username,
                 PasswordHass = BCrypt.Net.BCrypt.HashPassword(request.Password),
@@ -76,7 +76,7 @@ namespace MyApp.Application.Services
                 Role = "User"
             };
 
-            return await _userRepo.RegisterAsync(user);*/
+            return await _userRepo.RegisterAsync(user);*//*
             var user  = _mapper.Map<User>(request);
             return await _userRepo.RegisterAsync(user);
         }
@@ -105,3 +105,4 @@ namespace MyApp.Application.Services
         }
     }
 }
+*/

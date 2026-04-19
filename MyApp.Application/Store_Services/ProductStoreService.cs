@@ -1,5 +1,6 @@
 using AutoMapper;
 using MyApp.Application.Model_DTO;
+using MyApp.Application.Store_Interface;
 using MyApp.Domain.Common;
 using MyApp.Domain.Entities;
 using MyApp.Domain.Interfaces_store;

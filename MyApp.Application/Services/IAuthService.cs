@@ -1,4 +1,4 @@
-using MyApp.Application.Model_DTO;
+/*using MyApp.Application.Model_DTO;
 using MyApp.Domain.Common;
 using System;
 using System.Collections.Generic;
@@ -16,3 +16,4 @@ namespace MyApp.Application.Services
         Task<LoginResponse> RefreshTokenAsync(string refreshToken);
     }
 }
+*/

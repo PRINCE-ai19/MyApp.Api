@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Model_DTO;
-using MyApp.Application.Store_Services;
+using MyApp.Application.Store_Interface;
 
 namespace MyApp.Api.Controllers
 {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyApp.Application.Store_Services
+namespace MyApp.Application.Store_Interface
 {
     public interface IProductStoreService
     {

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using MyApp.Application.Model_DTO;
 using MyApp.Application.Resources;
-using MyApp.Application.Store_Services;
+using MyApp.Application.Store_Interface;
 
 namespace MyApp.Api.Controllers
 {

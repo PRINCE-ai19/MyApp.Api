@@ -13,10 +13,11 @@ using MyApp.Domain.Interfaces_store;
 using MyApp.Infrastructure.Data.Context;
 using MyApp.Infrastructure.Repositories;
 using MyApp.Infrastructure.Repositories_Store;
-using MyApp.Infrastructure.Services;
+//using MyApp.Infrastructure.Services;
 using MyApp.Infrastructure.Helpers;
 using System.Text;
 using Serilog;
+using MyApp.Application.Store_Interface;
 
 namespace MyApp.Api
 {
@@ -34,11 +35,19 @@ namespace MyApp.Api
             builder.Services.AddScoped<ICategoryRepository_store, CategoryRepository_store>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ICategoryStoreService, CategoryStoreService>();
-            builder.Services.AddScoped<IAuthService, AuthService>();
+            // builder.Services.AddScoped<IAuthService, AuthService>();
+            //  builder.Services.AddScoped<IUserRepository, UserRepository>();
+            // builder.Services.AddScoped<IJwtRepository, JwtRepository>();
+            builder.Services.AddScoped<IUserStoreService, UserStoreService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<IJwtRepository, JwtRepository>();
 
-        
+            builder.Services.AddScoped<IRoleSoteService, RoleStoreService>();
+             builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+
+            builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
+            builder.Services.AddScoped<IPermissionStoreService, PermissionStoreService>();
+
+
             builder.Services.AddScoped<IProductRepository_store, ProductRepository_store>();
             builder.Services.AddScoped<IProductStoreService, ProductStoreService>();
             builder.Services.AddScoped<IStoreHelper, StoreHelper>();
@@ -135,7 +144,7 @@ namespace MyApp.Api
             var app = builder.Build();
                 var supportedCultures = new[] { "en-US", "vi-VN" };
                 var localizationOptions = new RequestLocalizationOptions()
-                    .SetDefaultCulture("vi-VN") // Đặt ngôn ngữ mặc định là tiếng Việt
+                    .SetDefaultCulture("vi-VN") 
                     .AddSupportedCultures(supportedCultures)
                     .AddSupportedUICultures(supportedCultures);
 
