@@ -133,7 +133,7 @@
     <value>Tên gì mà dài thế, dưới 200 ký tự thôi nè.</value>
   </data>
   <data name="Product_Price_Required" xml:space="preserve">
-    <value>Phải có giá chứ babe.</value>
+    <value>Phải có giá chứ.</value>
   </data>
   <data name="Product_Price_Range" xml:space="preserve">
     <value>Giá phải lớn hơn 0 nha.</value>
@@ -245,5 +245,51 @@
   </data>
   <data name="expertoken" xml:space="preserve">
     <value>Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại</value>
+  </data>
+  <data name="RoleNotFound" xml:space="preserve">
+    <value>Vai trò không tồn tại.</value>
+  </data>
+  <data name="PermissionNotFound" xml:space="preserve">
+    <value>Quyền không tồn tại.</value>
+  </data>
+  <data name="PermissionAlreadyAssignedToRole" xml:space="preserve">
+    <value>Quyền này đã được gán cho vai trò này rồi.</value>
+  </data>
+  <data name="AddPermissionToRoleSuccess" xml:space="preserve">
+    <value>Gán quyền cho vai trò thành công!</value>
+  </data>
+  <data name="UpdateRolePermissionsSuccess" xml:space="preserve">
+    <value>Cập nhật quyền cho vai trò thành công!</value>
+  </data>
+  <data name="AddUserRoleSuccess" xml:space="preserve">
+    <value>Gán vai trò cho người dùng thành công!</value>
+  </data>
+  <data name="DeleteUserRoleSuccess" xml:space="preserve">
+    <value>Gỡ bỏ vai trò khỏi người dùng thành công!</value>
+  </data>
+  <data name="RoleAlreadyAssignedToUser" xml:space="preserve">
+    <value>Vai trò này đã được gán cho người dùng này rồi.</value>
+  </data>
+  <data name="RoleNotAssignedToUser" xml:space="preserve">
+    <value>Người dùng này chưa có vai trò này.</value>
+  </data>
+  <data name="StausnotUse" xml:space="preserve">
+    <value>trạng thái nãy đã xóa</value>
+  </data>
+  <data name="UpdateUsersInRoleSuccess" xml:space="preserve">
+    <value>Cập nhật danh sách người dùng cho vai trò thành công!</value>
+  </data>
+  <data name="CodeExexsit" xml:space="preserve">
+    <value>mã code này đã có rồi</value>
+  </data>
+  <data name="passwordwworng" xml:space="preserve">
+    <value>confirm password is not match</value>
+    <comment>xác nhận mật khẩu không khớp</comment>
+  </data>
+  <data name="wrong_login" xml:space="preserve">
+    <value>tài khoản mật khẩu không chính xác</value>
+  </data>
+  <data name="Session_Worng" xml:space="preserve">
+    <value>Phiên đăng nhập đã hết hạn hoặc không hợp lệ.</value>
   </data>
 </root>

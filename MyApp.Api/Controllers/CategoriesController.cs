@@ -38,9 +38,9 @@ namespace MyApp.Api.Controllers
             var result = await _sender.Send(new CreateCategoryCommand(dto));
             if (!result.Success)
             {
-                return BadRequest(new { message = result.Message });
+                return BadRequest(new { sucsses = 0 ,  message = result.Message });
             }
-            return Ok(new { message = result.Message });
+            return Ok(new { sucsses = 1, message = result.Message });
         }
 
         [HttpPost("sua/category{id}")]
@@ -51,9 +51,9 @@ namespace MyApp.Api.Controllers
 
             if (!result.Success)
             {
-                return BadRequest(new { message = result.Message });
+                return BadRequest(new { success = 0 , message = result.Message });
             }
-            return Ok(new { message = result.Message });
+            return Ok(new { sucsses = 1 , message = result.Message });
         }
 
         [HttpPost("delete/category/{id}")]
@@ -62,9 +62,9 @@ namespace MyApp.Api.Controllers
             var result = await _sender.Send(new DeleteCategoryCommad(id));
             if (!result.Success)
             {
-                return BadRequest(new { message = result.Message });
+                return BadRequest(new { sucsses = 0, message = result.Message });
             }
-            return Ok(new { message = result.Message });
+            return Ok(new { sucsses = 1, message = result.Message });
         }
     }
 }

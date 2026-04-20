@@ -13,7 +13,7 @@ using MyApp.Domain.Interfaces_store;
 using MyApp.Infrastructure.Data.Context;
 using MyApp.Infrastructure.Repositories;
 using MyApp.Infrastructure.Repositories_Store;
-//using MyApp.Infrastructure.Services;
+using MyApp.Infrastructure.Services;
 using MyApp.Infrastructure.Helpers;
 using System.Text;
 using Serilog;
@@ -35,9 +35,9 @@ namespace MyApp.Api
             builder.Services.AddScoped<ICategoryRepository_store, CategoryRepository_store>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ICategoryStoreService, CategoryStoreService>();
-            // builder.Services.AddScoped<IAuthService, AuthService>();
-            //  builder.Services.AddScoped<IUserRepository, UserRepository>();
-            // builder.Services.AddScoped<IJwtRepository, JwtRepository>();
+            
+            builder.Services.AddScoped<IAuthStoreService, AuthStoreService>();
+            builder.Services.AddScoped<IJwtRepository, JwtRepository>();
             builder.Services.AddScoped<IUserStoreService, UserStoreService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
 

@@ -349,3 +349,56 @@ Vì vậy, `SelfLog` ra đời để ghi lỗi ra một nơi khác (Console ho�
 
 **Kết luận:** Em dùng `ILogger` để in lỗi là cực kỳ chuẩn xác và đúng chuẩn Clean Architecture. `SelfLog` chỉ là cái "bảo hiểm" đi kèm để đảm bảo khi hệ thống log hỏng, em vẫn biết lý do tại sao thôi!
 
+giải thích về cơ chế JWT (JSON Web Token) cho Thực tập sinh (Intern)
+# Phân Tích Hệ Thống Phân Quyền (Senior Perspective)
+
+Chào bạn, đây là bản phân tích chuyên sâu về cách hệ thống nhận diện quyền từ Token.
+
+## 1. Thực trạng hiện tại: RBAC (Role-Based Access Control)
+Hiện tại, bạn đang sử dụng **RBAC**. 
+- **Cách hoạt động**: Khi login, bạn lấy các Role của User (Admin, Inter,...) và đóng gói vào JWT Claim.
+- **Hạn chế**: Khi bạn dùng `[Authorize(Roles = "Inter")]`, .NET chỉ kiểm tra: *"Trong Token có Role tên là Inter hay không?"*. 
+- **Vấn đề của bạn**: Nó hoàn toàn **CHƯA BIẾT** trong Role "Inter" có những Permission (quyền) gì như "Xem", "Thêm", "Xóa". Nó chỉ hiểu đơn giản: "Bạn là Inter -> Bạn được vào".
+
+---
+
+## 2. Giải pháp Senior: Permission-Based Authorization
+Để hệ thống biết chính xác bạn có quyền "Xem" nhưng không có quyền "Thêm", chúng ta có 2 hướng đi:
+
+### Hướng A: Đưa Permission vào Claims (Dễ làm, phổ biến)
+Khi User đăng nhập, ngoài việc lấy Role, bạn hãy Query luôn danh sách **Permission** của User đó và đưa vào Token.
+- **Token sẽ trông như thế này**:
+  - `Role`: Admin
+  - `Permission`: Category_View
+  - `Permission`: Category_Create
+  - `Permission`: Category_Delete
+- **Khi sử dụng**: Thay vì check Role, bạn check Permission:
+  `[Authorize(Policy = "CanViewCategory")]`
+
+### Hướng B: Authorization Policy & Requirement (Chuẩn Senior)
+Thay vì nhồi nhét mọi thứ vào Token (làm Token bị phình to), chúng ta dùng **Authorization Handler**.
+1. **Define Policy**: Trong `Program.cs`, bạn định nghĩa Policy `CanView`.
+2. **Logic**: Khi một request đến, Policy này sẽ gọi một cái Handler. Handler này sẽ:
+   - Đọc UserID từ Token.
+   - Truy cập Database (hoặc Cache) để xem UserID đó thuộc Role nào và Role đó có quyền "Xem" hay không.
+   - Nếu có -> Cho qua. Nếu không -> 403 Forbidden.
+
+---
+
+## 3. Tại sao [Authorize(Roles = "Inter")] của bạn hiện tại lại "vừa đúng vừa sai"?
+- **Nó đúng**: Vì bạn đang chặn cứng "Chỉ ai là Inter mới được vào".
+- **Nó sai**: Vì nếu mai kia bạn muốn thêm Role "Manager" cũng có quyền "Xem", bạn lại phải sửa code thành `[Authorize(Roles = "Inter, Manager")]`. Rất tốn công bảo trì!
+
+---
+
+## 4. Lời khuyên của Senior
+Để hệ thống của bạn thực sự linh hoạt, bạn nên:
+1. **Trong Database**: Giữ nguyên quan hệ `User -> Role -> Permission`.
+2. **Trong JWT**: Nên đưa thêm các Claims dạng `Permission`.
+3. **Trong Controller**: Sử dụng Policy thay vì Role. 
+   - Ví dụ: `[Authorize(Policy = "Category_View")]`. 
+
+Như vậy, sau này bạn muốn Role "Inter" có thêm quyền "Xóa", bạn chỉ cần chỉnh trong Database, **không cần sửa một dòng code C# nào cả!**
+
+---
+*Người phân tích: Senior AI Assistant*

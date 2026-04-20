@@ -65,5 +65,36 @@ namespace MyApp.Infrastructure.Repositories_Store
 
             return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
         }
+
+        public async Task<SpResponse> AddPermissionToRole(int roleId, int permissionId)
+        {
+            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_AddPermissionToRole", new { RoleId = roleId, PermissionId = permissionId });
+            if (response != null && !string.IsNullOrEmpty(response.Message))
+            {
+                response.Message = _localizer[response.Message];
+            }
+            return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
+        }
+
+        public async Task<SpResponse> UpdateRolePermissions(int roleId, IEnumerable<int> permissionIds)
+        {
+            var ids = string.Join(",", permissionIds);
+            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_UpdateRolePermissions", new { RoleId = roleId, PermissionIds = ids });
+            if (response != null && !string.IsNullOrEmpty(response.Message))
+            {
+                response.Message = _localizer[response.Message];
+            }
+            return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
+        }
+
+        public async Task<IEnumerable<Permission>> GetPermissionsByRoleId(int roleId)
+        {
+            return await _storeHelper.QueryAsync<Permission>("sp_GetPermissionsByRoleId", new { RoleId = roleId });
+        }
+
+        public async Task<IEnumerable<Role>> GetRolesByPermissionId(int permissionId)
+        {
+            return await _storeHelper.QueryAsync<Role>("sp_GetRolesByPermissionId", new { PermissionId = permissionId });
+        }
     }
 }

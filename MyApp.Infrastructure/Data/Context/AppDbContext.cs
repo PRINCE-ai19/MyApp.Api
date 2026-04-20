@@ -66,6 +66,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Code).HasMaxLength(20);
             entity.Property(e => e.CreatedPer).HasColumnType("datetime");
             entity.Property(e => e.Name).HasMaxLength(50);
+            entity.Property(e => e.RecordStatus).HasMaxLength(1);
             entity.Property(e => e.UpdatePer).HasColumnType("datetime");
         });
 
@@ -145,17 +146,17 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<UserRole>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__UserRole__3214EC07592FF3C6");
+            entity.HasKey(e => e.Id).HasName("PK__UserRole__3214EC07F5FFA220");
 
             entity.HasOne(d => d.Role).WithMany(p => p.UserRoles)
                 .HasForeignKey(d => d.RoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__UserRoles__RoleI__1EA48E88");
+                .HasConstraintName("FK_UserRoles_Roles");
 
             entity.HasOne(d => d.User).WithMany(p => p.UserRoles)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__UserRoles__UserI__1DB06A4F");
+                .HasConstraintName("FK_UserRoles_Users");
         });
 
         modelBuilder.Entity<UsersToken>(entity =>

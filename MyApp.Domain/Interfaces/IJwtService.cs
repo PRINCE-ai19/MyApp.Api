@@ -1,4 +1,4 @@
-﻿using MyApp.Domain.Entities;
+using MyApp.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ namespace MyApp.Domain.Interfaces
 {
     public interface IJwtRepository
     {
-        string GenerateAccessToken(User user);
+        string GenerateAccessToken(User user , IEnumerable<Role> roles);
         string GenerateRefreshToken();
     }
 }

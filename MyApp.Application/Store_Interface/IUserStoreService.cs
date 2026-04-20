@@ -16,5 +16,8 @@ namespace MyApp.Application.Store_Interface
             Task<SpResponse> AddUserAsync(UserADD_DTO userDto);
             Task<SpResponse> UpdateUserAsync(int id , User_DTO userDto);
             Task<SpResponse> DeleteUserAsync(int id);
+            Task<SpResponse> AddRoleToUserAsync(int userId, int roleId);
+            Task<SpResponse> DeleteRoleFromUserAsync(int userId, int roleId);
+            Task<IEnumerable<Role_DTO>> GetUserRolesDetailForUI(int userId);
     }
 }

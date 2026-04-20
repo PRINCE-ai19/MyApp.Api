@@ -15,6 +15,8 @@ public partial class Permission
 
     public DateTime? UpdatePer { get; set; }
 
+    public string? RecordStatus { get; set; }
+
     public virtual ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
 
     public virtual ICollection<UserPermission> UserPermissions { get; set; } = new List<UserPermission>();

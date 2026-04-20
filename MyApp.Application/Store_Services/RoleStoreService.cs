@@ -52,6 +52,9 @@ namespace MyApp.Application.Store_Services
             return await _repo.Delete(id);
         }
 
-      
+        public async Task<SpResponse> UpdateUsersInRoleAsync(int roleId, IEnumerable<int> userIds)
+        {
+            return await _repo.UpdateUsersInRole(roleId, userIds);
+        }
     }
 }

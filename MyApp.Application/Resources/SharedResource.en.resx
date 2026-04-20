@@ -246,4 +246,50 @@
   <data name="expertoken" xml:space="preserve">
     <value>Your login session has expired. Please log in again.</value>
   </data>
+  <data name="RoleNotFound" xml:space="preserve">
+    <value>Role not found.</value>
+  </data>
+  <data name="PermissionNotFound" xml:space="preserve">
+    <value>Permission not found.</value>
+  </data>
+  <data name="PermissionAlreadyAssignedToRole" xml:space="preserve">
+    <value>Permission is already assigned to this role.</value>
+  </data>
+  <data name="AddPermissionToRoleSuccess" xml:space="preserve">
+    <value>Permission assigned to role successfully!</value>
+  </data>
+  <data name="UpdateRolePermissionsSuccess" xml:space="preserve">
+    <value>Role permissions updated successfully!</value>
+  </data>
+  <data name="AddUserRoleSuccess" xml:space="preserve">
+    <value>Role assigned to user successfully!</value>
+  </data>
+  <data name="DeleteUserRoleSuccess" xml:space="preserve">
+    <value>Role removed from user successfully!</value>
+  </data>
+  <data name="RoleAlreadyAssignedToUser" xml:space="preserve">
+    <value>This role is already assigned to this user.</value>
+  </data>
+  <data name="RoleNotAssignedToUser" xml:space="preserve">
+    <value>This user does not have this role.</value>
+  </data>
+  <data name="StausnotUse" xml:space="preserve">
+    <value>Status code null</value>
+  </data>
+  <data name="UpdateUsersInRoleSuccess" xml:space="preserve">
+    <value>Users list for role updated successfully!</value>
+  </data>
+  <data name="CodeExexsit" xml:space="preserve">
+    <value>Code already exesit</value>
+  </data>
+  <data name="passwordwworng" xml:space="preserve">
+    <value>confirm password is not match</value>
+    <comment>xác nhận mật khẩu không khớp</comment>
+  </data>
+  <data name="wrong_login" xml:space="preserve">
+    <value>Incorrect account password</value>
+  </data>
+  <data name="Session_Worng" xml:space="preserve">
+    <value>Your login session has expired or is invalid.</value>
+  </data>
 </root>

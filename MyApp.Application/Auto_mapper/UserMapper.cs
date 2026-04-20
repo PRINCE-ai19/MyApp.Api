@@ -18,6 +18,11 @@ namespace MyApp.Application.Auto_mapper
                         ? (DateTime?)null
                         : DateTime.ParseExact(src.CreatedAt, "dd/MM/yyyy", new CultureInfo("vi-VN"))));
 
+            CreateMap<RegisterRequest, User>()
+                .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => BCrypt.Net.BCrypt.HashPassword(src.Password)))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt ?? DateTime.Now))
+                .ForMember(dest => dest.RecordStatus, opt => opt.MapFrom(src => "1"));
+
             CreateMap<User , User_DTO>().ReverseMap();
 
             CreateMap<Role , Role_DTO>()

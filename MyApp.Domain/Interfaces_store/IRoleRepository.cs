@@ -1,4 +1,4 @@
-﻿using MyApp.Domain.Common;
+using MyApp.Domain.Common;
 using MyApp.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -19,5 +19,6 @@ namespace MyApp.Domain.Interfaces_store
         Task<SpResponse> Update(Role role);
 
         Task<SpResponse> Delete(int id);
+        Task<SpResponse> UpdateUsersInRole(int roleId, IEnumerable<int> userIds);
     }
 }

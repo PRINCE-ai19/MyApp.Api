@@ -52,6 +52,20 @@ namespace MyApp.Application.Store_Services
             return await _repo.DeleteAsync(id);
         }
 
-     
+        public async Task<SpResponse> AddRoleToUserAsync(int userId, int roleId)
+        {
+            return await _repo.AddRoleToUser(userId, roleId);
+        }
+
+        public async Task<SpResponse> DeleteRoleFromUserAsync(int userId, int roleId)
+        {
+            return await _repo.DeleteRoleFromUser(userId, roleId);
+        }
+
+        public async Task<IEnumerable<Role_DTO>> GetUserRolesDetailForUI(int userId)
+        {
+            var entities = await _repo.GetUserRolesDetail(userId);
+            return _mapper.Map<IEnumerable<Role_DTO>>(entities);
+        }
     }
 }

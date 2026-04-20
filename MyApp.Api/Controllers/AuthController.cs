@@ -1,7 +1,10 @@
-/*using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using MyApp.Application.Model_DTO;
-using MyApp.Application.Services;
+using MyApp.Application.Resources;
+using MyApp.Application.Store_Interface;
+using System.Threading.Tasks;
 
 namespace MyApp.Api.Controllers
 {
@@ -9,49 +12,67 @@ namespace MyApp.Api.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthService _authService;
-        public AuthController(IAuthService authService)
+        private readonly IAuthStoreService _authService;
+         private readonly ILogger<AuthController> _logger;
+        private readonly IStringLocalizer<SharedResource> _localizer;
+
+        public AuthController(IAuthStoreService authService , ILogger<AuthController> logger , IStringLocalizer<SharedResource> localizer )
         {
             _authService = authService;
+            _logger = logger;
+            _localizer = localizer;
         }
+
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
-            try
+            var result = await _authService.LoginAsync(loginRequest);
+
+            if (result == null)
             {
-                var result = await _authService.LoginAsync(request);
-                return Ok(result); 
+                return Unauthorized(new { succcess = 0 , Message = _localizer["wrong_login"] });
             }
-            catch (Exception ex)
-            {
-                return Unauthorized(new { message = ex.Message }); 
-            }
+
+            return Ok(result);
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
         {
-            var result = await _authService.RegisterAsync(request);
-            if (result.Success)
+            var result = await _authService.RegisterAsync(registerRequest);
+
+            if (!result.Success)
             {
-                return Ok(result);
+                return BadRequest(result);
             }
-            return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromQuery] string refreshToken)
+        {
+            var result = await _authService.LogoutAsync(refreshToken);
+
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
         }
 
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> Refresh([FromBody] string refreshToken)
+        public async Task<IActionResult> RefreshToken([FromQuery] string refreshToken)
         {
-            try
+            var result = await _authService.RefreshTokenAsync(refreshToken);
+
+            if (result == null)
             {
-                var result = await _authService.RefreshTokenAsync(refreshToken);
-                return Ok(result);
+                return Unauthorized(new { success = 0 , Message = _localizer["Session_Worng"]  });
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+
+            return Ok(result);
         }
     }
 }
-*/

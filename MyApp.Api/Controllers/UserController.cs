@@ -55,5 +55,26 @@ namespace MyApp.Api.Controllers
             if (!response.Success) return BadRequest(response);
             return Ok(response);
         }
+
+        [HttpPost("roles/add")]
+        public async Task<IActionResult> AddRole(int userId, int roleId)
+        {
+            var response = await _userStore.AddRoleToUserAsync(userId, roleId);
+            return Ok(response);
+        }
+
+        [HttpPost("roles/delete")]
+        public async Task<IActionResult> DeleteRole(int userId, int roleId)
+        {
+            var response = await _userStore.DeleteRoleFromUserAsync(userId, roleId);
+            return Ok(response);
+        }
+
+        [HttpGet("roles/{userId}")]
+        public async Task<IActionResult> GetRoles(int userId)
+        {
+            var data = await _userStore.GetUserRolesDetailForUI(userId);
+            return Ok(data);
+        }
     }
 }

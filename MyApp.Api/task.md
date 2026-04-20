@@ -179,3 +179,37 @@
 - [ ] **Tích hợp UI**: Nhúng các Endpoint Product `/Rotev2` vào giao diện quản trị React/Vue.
 - [ ] **Unit Test**: Viết test case cho `StoreHelper` để đảm bảo mapping tham số luôn chính xác.
 - [ ] **Tài liệu**: Cập nhật Swagger documentation cho các endpoint mới.
+ 
+---
+## Tiến độ công việc - 20/04/2026 (Cập nhật 15:50 PM)
+ 
+### 1. Hệ thống Authentication & Refresh Token (Store-based) - [HOÀN THÀNH]
+- [x] **Quản lý Token (UsersToken)**:
+    - [x] Triển khai bảng `UsersToken` để quản lý Refresh Token theo từng phiên đăng nhập.
+    - [x] Viết Stored Procedure `sp_SaveRefreshToken` hỗ trợ tự động tăng mã (R1, R2, R3...) cho từng User.
+    - [x] Xây dựng logic **Refresh Token Rotation**: Tự động vô hiệu hóa Token cũ khi cấp Token mới.
+- [x] **Tính năng Đăng xuất (Logout)**:
+    - [x] Triển khai `sp_Logout` để vô hiệu hóa Refresh Token trong Database.
+    - [x] Hoàn thiện endpoint API `/api/auth/logout`.
+- [x] **Cải thiện Đăng ký (Register)**:
+    - [x] Tích hợp **AutoMapper** để ánh xạ `RegisterRequest` sang `User` một cách chuyên nghiệp.
+    - [x] Tự động hóa việc băm mật khẩu (BCrypt) thông qua cấu hình mapping trong `UserMapper`.
+    - [x] Rút gọn code tầng Service, chuyển logic mapping sang Mapper Profile.
+ 
+### 2. Module Phân quyền & Role (Store-based) - [ĐANG TRIỂN KHAI]
+- [x] **Hạ tầng Role & Permission**:
+    - [x] Triển khai `RoleRepository` và `PermissionRepository` sử dụng `StoreHelper`.
+    - [x] Xây dựng các Service tương ứng: `RoleStoreService`, `PermissionStoreService`.
+- [x] **Tối ưu hóa đa ngôn ngữ (Localization)**:
+    - [x] Tích hợp `IStringLocalizer` vào `AuthStoreService` để dịch các thông báo lỗi (`passwordwworng`, `AccountLocked`).
+    - [x] Chuẩn hóa việc trả về `SpResponse` từ Store kết hợp dịch thông báo tại Repository.
+ 
+### 3. Fix Bug & Refactor (Hệ thống) - [HOÀN THÀNH]
+- [x] **Sửa lỗi Multiple Results**: Khắc phục lỗi "Sequence contains more than one element" bằng cách sử dụng `ReadFirstOrDefaultAsync` trong `UserRepository`.
+- [x] **Sửa lỗi Mapping DTO**: Đồng bộ hóa `User_DTO` để khớp với dữ liệu trả về từ Store đăng nhập.
+- [x] **Cải thiện StoreHelper**: Bổ sung hỗ trợ đọc dữ liệu đơn lẻ (FirstOrDefault) trong `IMultipleResultReader`.
+ 
+### 4. Công việc tiếp theo
+- [ ] **Phân quyền dựa trên Policy**: Thay thế việc kiểm tra Role cứng bằng hệ thống Permission-based Authorization (theo tài liệu `flow.md`).
+- [ ] **Middleware Check Token**: Viết Middleware để kiểm tra trạng thái `IsActive` của Refresh Token trong mỗi yêu cầu (nếu cần bảo mật cao).
+- [ ] **Giao diện quản lý**: Xây dựng trang quản lý Role và cấp quyền cho User trên Frontend.

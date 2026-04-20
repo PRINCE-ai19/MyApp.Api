@@ -54,5 +54,12 @@ namespace MyApp.Api.Controllers
             if (!response.Success) return BadRequest(response);
             return Ok(response);
         }
+
+        [HttpPost("update-users/{roleId}")]
+        public async Task<IActionResult> UpdateUsersInRole(int roleId, [FromBody] IEnumerable<int> userIds)
+        {
+            var response = await _roleStore.UpdateUsersInRoleAsync(roleId, userIds);
+            return Ok(response);
+        }
     }
 }

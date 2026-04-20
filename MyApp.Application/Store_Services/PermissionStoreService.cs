@@ -51,5 +51,27 @@ namespace MyApp.Application.Store_Services
         {
             return await _repo.Delete(id);
         }
+
+        public async Task<SpResponse> AddPermissionToRoleAsync(int roleId, int permissionId)
+        {
+            return await _repo.AddPermissionToRole(roleId, permissionId);
+        }
+
+        public async Task<SpResponse> UpdateRolePermissionsAsync(int roleId, IEnumerable<int> permissionIds)
+        {
+            return await _repo.UpdateRolePermissions(roleId, permissionIds);
+        }
+
+        public async Task<IEnumerable<Permission_DTO>> GetPermissionsByRoleIdForUI(int roleId)
+        {
+            var permissions = await _repo.GetPermissionsByRoleId(roleId);
+            return _mapper.Map<IEnumerable<Permission_DTO>>(permissions);
+        }
+
+        public async Task<IEnumerable<Role_DTO>> GetRolesByPermissionIdForUI(int permissionId)
+        {
+            var roles = await _repo.GetRolesByPermissionId(permissionId);
+            return _mapper.Map<IEnumerable<Role_DTO>>(roles);
+        }
     }
 }

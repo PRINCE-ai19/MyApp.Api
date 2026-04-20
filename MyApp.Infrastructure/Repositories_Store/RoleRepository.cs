@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Localization;
 using MyApp.Application.Resources;
 using MyApp.Domain.Common;
 using MyApp.Domain.Entities;
@@ -69,7 +69,15 @@ namespace MyApp.Infrastructure.Repositories_Store
             return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
         }
 
-
-      
+        public async Task<SpResponse> UpdateUsersInRole(int roleId, IEnumerable<int> userIds)
+        {
+            var ids = string.Join(",", userIds);
+            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_UpdateUsersInRole", new { RoleId = roleId, UserIds = ids });
+            if (response != null && !string.IsNullOrEmpty(response.Message))
+            {
+                response.Message = _localizer[response.Message];
+            }
+            return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
+        }
     }
 }

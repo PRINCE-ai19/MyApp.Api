@@ -73,5 +73,83 @@ namespace MyApp.Infrastructure.Repositories_Store
             }
             return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
         }
+
+        public async Task<SpResponse> AddRoleToUser(int userId, int roleId)
+        {
+            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_AddRoleToUser", new { UserId = userId, RoleId = roleId });
+            if (response != null && !string.IsNullOrEmpty(response.Message))
+            {
+                response.Message = _localizer[response.Message];
+            }
+            return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
+        }
+
+        public async Task<SpResponse> DeleteRoleFromUser(int userId, int roleId)
+        {
+            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_DeleteRoleFromUser", new { UserId = userId, RoleId = roleId });
+            if (response != null && !string.IsNullOrEmpty(response.Message))
+            {
+                response.Message = _localizer[response.Message];
+            }
+            return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
+        }
+
+        public async Task<IEnumerable<Role>> GetUserRolesDetail(int userId)
+        {
+            return await _storeHelper.QueryAsync<Role>("sp_GetUserRolesDetail", new { UserId = userId });
+        }
+
+        public async Task<(User user, IEnumerable<Role> roles)> LoginAsync(string usernameOrEmail)
+        {
+            using (var multi = await _storeHelper.QueryMultipleAsync("sp_Login", new { Email = usernameOrEmail }))
+            {
+                var user = await multi.ReadFirstOrDefaultAsync<User>();
+                var roles = (await multi.ReadAsync<Role>()).ToList(); 
+                return (user, roles);
+            }
+        }
+        public async Task SaveRefreshToken(int userId, string refreshToken, DateTime expires)
+        {
+            await _storeHelper.ExecuteAsync("sp_SaveRefreshToken", new 
+            { 
+                UserId = userId, 
+                RefreshToken = refreshToken, 
+                Expires = expires 
+            });
+        }
+
+        public async Task<SpResponse> RegisterAsync(User user)
+        {
+            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_RegisterUser", user);
+
+            if (response != null && !string.IsNullOrEmpty(response.Message))
+            {
+                response.Message = _localizer[response.Message];
+            }
+
+            return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
+        }
+
+        public async Task<SpResponse> LogoutAsync(string refreshToken)
+        {
+            var response = await _storeHelper.QueryFirstOrDefaultAsync<SpResponse>("sp_Logout", new { RefreshToken = refreshToken });
+
+            if (response != null && !string.IsNullOrEmpty(response.Message))
+            {
+                response.Message = _localizer[response.Message];
+            }
+
+            return response ?? new SpResponse { Success = false, Message = _localizer["ERROR_UNKNOWN_DATABASE"] };
+        }
+
+        public async Task<(User user, IEnumerable<Role> roles)> ValidateRefreshToken(string refreshToken)
+        {
+            using (var reader = await _storeHelper.QueryMultipleAsync("sp_ValidateRefreshToken", new { RefreshToken = refreshToken }))
+            {
+                var user = await reader.ReadFirstOrDefaultAsync<User>();
+                var roles = await reader.ReadAsync<Role>();
+                return (user!, roles);
+            }
+        }
     }
 }

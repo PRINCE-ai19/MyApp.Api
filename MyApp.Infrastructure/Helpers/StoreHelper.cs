@@ -49,5 +49,17 @@ namespace MyApp.Infrastructure.Helpers
                 commandType: CommandType.StoredProcedure
             );
         }
+
+        public async Task<IMultipleResultReader> QueryMultipleAsync(string spName, object? parameters = null)
+        {
+            var connection = _context.Database.GetDbConnection();
+            var dParams = await DapperHelper.MapParametersAsync(connection, spName, parameters);
+            var gridReader = await connection.QueryMultipleAsync(
+                spName,
+                dParams,
+                commandType: CommandType.StoredProcedure
+            );
+            return new DapperMultipleResultReader(gridReader);
+        }
     }
 }

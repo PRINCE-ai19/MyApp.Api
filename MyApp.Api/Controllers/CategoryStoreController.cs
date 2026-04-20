@@ -1,3 +1,4 @@
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Model_DTO;
@@ -16,13 +17,15 @@ namespace MyApp.Api.Controllers
             _categoryService = categoryService;
         }
 
+        [Authorize(Roles = "Inter")]
         [HttpGet("/Rotev2/Get/SearchCategories")]
         public async Task<IActionResult> SearchCategories([FromQuery] string? name)
         { 
                 var data = await _categoryService.SearchCategoryByName(name);
                 return Ok(data);
         }
-
+       
+        [Authorize(Roles = "Inter")]
         [HttpGet("/Rotev2/Get/AllCategory")]
         public async Task<IActionResult> Get()
         {
@@ -30,6 +33,7 @@ namespace MyApp.Api.Controllers
             return Ok(data);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("/Rotev2/Get/Category/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -45,6 +49,7 @@ namespace MyApp.Api.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("/Rotev2/Update/Category/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Category_DTO categoryDto)
         {
@@ -61,6 +66,7 @@ namespace MyApp.Api.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("/Rotev2/Create/Category")]
         public async Task<IActionResult> Create([FromBody] Category_DTO categoryDto)
         {
@@ -76,6 +82,7 @@ namespace MyApp.Api.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("/Rotev2/Delete/Category/{id}")]
         public async Task<IActionResult> Delete(int id)
         {

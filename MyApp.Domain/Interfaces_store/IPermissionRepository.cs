@@ -1,4 +1,4 @@
-﻿using MyApp.Domain.Common;
+using MyApp.Domain.Common;
 using MyApp.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -19,5 +19,9 @@ namespace MyApp.Domain.Interfaces_store
         Task<SpResponse> Update(Permission permission);
 
         Task<SpResponse> Delete(int id);
+        Task<SpResponse> AddPermissionToRole(int roleId, int permissionId);
+        Task<SpResponse> UpdateRolePermissions(int roleId, IEnumerable<int> permissionIds);
+        Task<IEnumerable<Permission>> GetPermissionsByRoleId(int roleId);
+        Task<IEnumerable<Role>> GetRolesByPermissionId(int permissionId);
     }
 }
